@@ -5,21 +5,24 @@ class TopoEdgeAndFaceTracker(object):
     becomes a 'Real' Edge. Any subsequent additions will result in an error
     '''
     def __init__(self):
-        self._seen = {}
         self._faces = []
+        self._edges = []
+        # Each of these dictionaries will use an integer as a key. That integer
+        # will correspond to an index in the `self._edges` list, which itself
+        # holds a list of OpenCascade Edge objects
+
+        # Each key holds a single integer value, which corresponds to an index
+        # in the self._faces list
         self._openEdges = {}
+        # Each key holds a pair of integer values, which correspond to indices
+        # in the self._faces list. These two faces together comprise the 'real
+        # edge'
         self._realEdges = {}
-        self._lastEdgeNumber = 0
-
-    def getNumbFaces(self):
-        return len(self._faces)
-
-    def getAllFaces(self):
-        return self._faces
 
     def addFace(self, OCCFace):
         for face in self._faces:
-            if face.isEqual(OCCFace):
+            check = face.isEqual(OCCFace)
+            if check:
                 msg = 'Cannot add the same face more than once.'
                 raise ValueError(msg)
         self._faces.append(OCCFace)
@@ -29,20 +32,18 @@ class TopoEdgeAndFaceTracker(object):
         return index
 
     def _addEdge(self, OCCEdge, faceIndex):
-        self._openEdges[OCCEdge] = faceIndex
-
-    def addEdges(self, Face):
-        for edge in Face.Edges:
-            self.append(edge)
-
-    def getRealEdges(self):
-        return self._realEdges
-
-    def getOpenEdges(self):
-        return self._openEdges
-
-    def getAllEdges(self):
-        return self._openEdges + self._realEdges
+        popped = False
+        for i in self._openEdges.keys():
+            edge = self._edges[i]
+            if edge.isEqual(OCCEdge):
+                face1Index = self._openEdges.pop(i)
+                self._realEdges[i] = [face1Index, faceIndex]
+                popped = True
+                break
+        if popped == False:
+            self._edges.append(OCCEdge)
+            index = len(self._edges) - 1
+            self._openEdges[index] = faceIndex
 
     def newFace(self, Face):
         for index,face in self._faces.items():
