@@ -1,4 +1,4 @@
-class TopoEdges(object):
+class TopoEdgeAndFaceTracker(object):
     '''A list of  Edges
 
     The first time an Edge is added, it is considered an 'Open' Edge. The second time, it
@@ -6,47 +6,43 @@ class TopoEdges(object):
     '''
     def __init__(self):
         self._seen = {}
-        self._openEdges = []
+        self._faces = []
+        self._openEdges = {}
         self._realEdges = {}
         self._lastEdgeNumber = 0
 
-    def append(self, Edge):
-        index = None
-        for i in range(len(self._openEdges)):
-            edge = self._openEdges[i]
-            check = edg.isEqual(Edge)
-            print('check = {}'.format(check))
-            if check:
-                self._openEdges.pop(i)
-                index = self._lastEdgeNumber
-                self._lastEdgeNumber += 1
-                self._realEdges[index] = Edge
-                break
-            elif i == len(self._openEdges) - 1:
-                self._openEdges.append(Edge)
-            else:
-                msg = 'Only two faces may share an Edge'
+    def getNumbFaces(self):
+        return len(self._faces)
+
+    def getAllFaces(self):
+        return self._faces
+
+    def addFace(self, OCCFace):
+        for face in self._faces:
+            if face.isEqual(OCCFace):
+                msg = 'Cannot add the same face more than once.'
                 raise ValueError(msg)
+        self._faces.append(OCCFace)
+        index = len(self._faces) - 1
+        for Edge in OCCFace.Edges:
+            self._addEdge(Edge, index)
         return index
+
+    def _addEdge(self, OCCEdge, faceIndex):
+        self._openEdges[OCCEdge] = faceIndex
 
     def addEdges(self, Face):
         for edge in Face.Edges:
             self.append(edge)
 
     def getRealEdges(self):
-        return self._edges
+        return self._realEdges
 
     def getOpenEdges(self):
-        return [i for i in self._seen.keys() if self._seen[i] is None]
+        return self._openEdges
 
     def getAllEdges(self):
-        return [i for i in self._seen.keys()]
-
-class TopoFaces(object):
-    def __init__(self):
-        self._edges = TopoEdges()
-        self._faces = {}
-        self._lastFaceNumber = 0
+        return self._openEdges + self._realEdges
 
     def newFace(self, Face):
         for index,face in self._faces.items():

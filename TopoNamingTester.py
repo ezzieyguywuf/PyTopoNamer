@@ -1,6 +1,6 @@
 import unittest
 from unittest import mock
-from TopoNamer import TopoNamer, TopoEdges, TopoFaces
+from TopoNamer import TopoNamer, TopoEdgeAndFaceTracker
 
 class FakeOCCEdge(object):
     def isEqual(self):
@@ -22,15 +22,47 @@ class FakePartFeature(object):
 
     Shape = FakeOCCShape()
 
-class TestEdges(unittest.TestCase):
+class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
+    def setUp(self):
+        self.tracker = TopoEdgeAndFaceTracker()
+        self.mock_occEdges = [mock.MagicMock(spec=FakeOCCEdge) for i in range(4)]
+        self.mock_occFace = mock.MagicMock(spec=FakeOCCFace)
+        self.mock_occFace.Edges = self.mock_occEdges
 
-    def test_addEdge(self):
-        edges = TopoEdges()
-        mock_Edge = mock.MagicMock(spec=FakeOCCEdge)
-        index = edges.append(mock_Edge)
-        self.assertEqual(edges.getAllEdges(), [mock_Edge])
-        self.assertEqual(index, 0)
+    def test_getAllFaces(self):
+        in_faces = ['face1', 'face2', 'face3']
+        self.tracker._faces = in_faces
+        faces = self.tracker.getAllFaces()
+        self.assertEqual(faces, in_faces)
+
+    def test_getNumberOfFaces(self):
+        in_faces = ['face1', 'face2', 'face3']
+        self.tracker._faces = in_faces
+        numb = self.tracker.getNumbFaces()
+        self.assertEqual(numb, 3)
+
+    def test_addFace(self):
+        key = self.tracker.addFace(self.mock_occFace)
+        check_key = 0
+        check_dict = {}
+        for Edge in self.mock_occEdges:
+            check_dict[Edge] = check_key
+        self.assertEqual(self.tracker.getNumbFaces(), 1)
+        self.assertEqual(key, check_key)
+        self.assertEqual(len(self.tracker._openEdges), 4)
+        self.assertEqual(self.tracker._openEdges, check_dict)
+
+    def test_addSameFaceError(self):
+        mock_faces = [mock.MagicMock(spec=FakeOCCFace) for i in range(6)]
+        for i, mock_face in enumerate(mock_faces):
+            if i == 0:
+                mock_face.isEqual.side_effect = [False]*4 + [True]
+            else:
+                mock_face.isEqual.side_effect = [False]*6
+        for mock_face in mock_faces[:5]:
+            self.tracker.addFace(mock_face)
+        self.assertRaises(ValueError, self.tracker.addFace, mock_faces[5])
 
     # def test_getOpenEdges(self):
         # edges = TopoEdges()
@@ -70,28 +102,12 @@ class TestFaces(unittest.TestCase):
         self.faces = TopoFaces()
         self.mock_occFace = mock.MagicMock(spec=FakeOCCFace)
 
-    def test_newFace(self):
-        key = self.faces.newFace(self.mock_occFace)
-        self.assertEqual(len(self.faces._faces), 1)
-        self.assertEqual(key, 0)
-
     def test_newFaces(self):
         self.mock_occFace.isEqual.side_effect = [False]*20
         for i in range(6):
             key = self.faces.newFace(self.mock_occFace)
         self.assertEqual(len(self.faces._faces), 6)
         self.assertEqual(key, 5)
-
-    def test_addSameFaceError(self):
-        mock_faces = [mock.MagicMock(spec=FakeOCCFace) for i in range(6)]
-        for i, mock_face in enumerate(mock_faces):
-            if i == 0:
-                mock_face.isEqual.side_effect = [False]*4 + [True]
-            else:
-                mock_face.isEqual.side_effect = [False]*6
-        for mock_face in mock_faces[:5]:
-            self.faces.newFace(mock_face)
-        self.assertRaises(ValueError, self.faces.newFace, mock_faces[5])
 
     def test_addEdge(self):
         '''Note: an Edge is not added directly. It is added in the background whenever two
