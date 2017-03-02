@@ -1,186 +1,201 @@
 import unittest
 from unittest import mock
 from TopoNamer import TopoNamer, TopoEdgeAndFaceTracker
+from TestingHelpers import MockObjectMaker
 
-class FakeOCCEdge(object):
-    def isEqual(self):
-        pass
-
-class FakeOCCFace(object):
-    Edges = list()
-    def isEqual(self):
-        pass
-
-class FakeOCCShape(object):
-    '''A Skeleton class for use in MagicMock's `spec` arguement'''
-
-    Faces = list()
-
-class FakePartFeature(object):
-
-    """A skeleton class for use in MagicMock's `spec` arguement"""
-
-    Shape = FakeOCCShape()
 
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
     def setUp(self):
+        self.maker = MockObjectMaker()
         self.tracker = TopoEdgeAndFaceTracker()
 
-    @staticmethod
-    def getMockOCCEdge(side_effect=[False]*10):
-        mock_edge = mock.MagicMock(spec=FakeOCCEdge)
-        mock_edge.isEqual.side_effect = side_effect
-        return mock_edge
+    def test_addEdge(self):
+        mock_edge = self.maker.OCCEdge()
 
-    @staticmethod
-    def getMockOCCFace(edges=None, isEqual_sideEffect=None):
-        mock_face = mock.MagicMock(spec=FakeOCCFace)
-        if edges is None:
-            edges = []
-            for i in range(4):
-                edge = TestTracker.getMockOCCEdge()
-                edges.append(edge)
-        mock_face.Edges = edges
+        name = self.tracker._addEdge(mock_edge, 'Face0')
 
-        if isEqual_sideEffect is None:
-            isEqual_sideEffect = [False]*10
-        mock_face.isEqual.side_effect = isEqual_sideEffect
+        check_dict = {'Edge0':{'numbShared':1,
+                               'edgeIndex':0}}
+        self.assertEqual(self.tracker._edges, [mock_edge])
+        self.assertEqual(self.tracker._edgeNames, check_dict)
+        self.assertEqual(name, 'Edge0')
 
-        return mock_face
+    def test_addEdgeTwice(self):
+        mock_edge = self.maker.OCCEdge()
+
+        name0 = self.tracker._addEdge(mock_edge, 'Face0')
+        name1 = self.tracker._addEdge(mock_edge, 'Face1')
+
+        check_dict = {'Edge0':{'numbShared':2,
+                               'edgeIndex':0}}
+        self.assertEqual(self.tracker._edges, [mock_edge])
+        self.assertEqual(self.tracker._edgeNames, check_dict)
+        self.assertEqual(name0, 'Edge0')
+        self.assertEqual(name1, 'Edge0')
+
+    def test_addEdgeThrice(self):
+        mock_edge = self.maker.OCCEdge()
+
+        self.tracker._addEdge(mock_edge, 'Face0')
+        self.tracker._addEdge(mock_edge, 'Face1')
+        self.assertRaises(ValueError, self.tracker._addEdge, mock_edge, 'Face2')
+
+    def test_addEdges(self):
+        edges = [self.maker.OCCEdge() for i in range(10)]
+
+        names = self.tracker._addEdges(edges, 'Face0')
+        self.assertEqual(names, ['Edge{}'.format(i) for i in range(10)])
+
 
     def test_addFace(self):
-        mock_face = self.getMockOCCFace()
-        check_key = 0
-        check_dict = {}
-        for i,Edge in enumerate(mock_face.Edges):
-            check_dict[i] = check_key
+        mock_face = self.maker.OCCFace()
+        check_name = 'Face0'
+        check_dict = {check_name:{'faceIndex':0,
+                                  'edgeNames':['Edge{}'.format(i) for i in range(4)]}}
 
-        key = self.tracker.addFace(mock_face)
+        facename = self.tracker.addFace(mock_face)
 
         self.assertEqual(self.tracker._faces, [mock_face])
-        self.assertEqual(key, check_key)
-        self.assertEqual(self.tracker._openEdges, check_dict)
-        self.assertEqual(self.tracker._edges, mock_face.Edges)
-
-    def test_addTwoFacesWithZeroSharedEdges(self):
-        mock_face1 = self.getMockOCCFace()
-        mock_face2 = self.getMockOCCFace()
-
-        key1 = self.tracker.addFace(mock_face1)
-        key2 = self.tracker.addFace(mock_face2)
-
-        self.assertEqual(self.tracker._faces, [mock_face1, mock_face2])
-        self.assertEqual(key1, 0)
-        self.assertEqual(key2, 1)
-        self.assertEqual(len(self.tracker._openEdges), 8)
-
-
-        check_dict = {}
-        check_edges = []
-        for i,Edge in enumerate(mock_face1.Edges + mock_face2.Edges):
-            if i <= 3:
-                index = 0
-            else:
-                index = 1
-            check_dict[i] = index
-            check_edges.append(Edge)
-        self.assertEqual(self.tracker._openEdges, check_dict)
-        self.assertEqual(self.tracker._edges, check_edges)
+        self.assertEqual(facename, check_name)
+        self.assertEqual(self.tracker._faceNames, check_dict)
 
     def test_addSameFaceError(self):
-        mock_faces = [mock.MagicMock(spec=FakeOCCFace) for i in range(6)]
-        for i, mock_face in enumerate(mock_faces):
-            if i == 0:
-                mock_face.isEqual.side_effect = [False]*4 + [True]
-            else:
-                mock_face.isEqual.side_effect = [False]*6
+        mock_faces = [self.maker.OCCFace() for i in range(6)]
+        mock_faces[5].value = mock_faces[0].value
         for mock_face in mock_faces[:5]:
             self.tracker.addFace(mock_face)
         self.assertRaises(ValueError, self.tracker.addFace, mock_faces[5])
 
-    def test_addTwoFacesWithSharedEdge(self):
-        mock_face1 = self.getMockOCCFace()
-        mock_face2 = self.getMockOCCFace()
+    def test_addTwoFacesWithZeroSharedEdges(self):
+        mock_face1  = self.maker.OCCFace()
+        mock_face2  = self.maker.OCCFace()
+        check_name0 = 'Face0'
+        check_name1 = 'Face1'
+        check_dict  = {check_name0:{'faceIndex':0,
+                                    'edgeNames':['Edge{}'.format(i) for i in range(4)]},
+                       check_name1:{'faceIndex':1,
+                                    'edgeNames':['Edge{}'.format(i) for i in range(4,8)]}}
 
-        sharedEdge = mock_face1.Edges[0]
-        mock_face2.Edges[3] = sharedEdge
+        name0 = self.tracker.addFace(mock_face1)
+        name1 = self.tracker.addFace(mock_face2)
+
+        self.assertEqual(self.tracker._faces, [mock_face1, mock_face2])
+        self.assertEqual(name0, check_name0)
+        self.assertEqual(name1, check_name1)
+        self.assertEqual(self.tracker._faceNames, check_dict)
+
+    def test_addTwoFacesWithSharedEdge(self):
+        mock_face1 = self.maker.OCCFace()
+        mock_face2 = self.maker.OCCFace()
+        check_dict  = {'Face0':{'faceIndex':0,
+                                'edgeIndices':[0,1,2,3]},
+                       'Face1':{'faceIndex':1,
+                                'edgeIndices':[4,0,5,6]}}
+
+        mock_face2.Edges[1].value = mock_face1.Edges[0].value
+
+        name1 = self.tracker.addFace(mock_face1)
+        name2 = self.tracker.addFace(mock_face2)
+
+        self.assertEqual(self.tracker._faceNames, check_dict)
+
+    def test_addThreeFacesWithSeparateSharedEdges(self):
+        mock_face1 = self.maker.OCCFace()
+        mock_face2 = self.maker.OCCFace()
+        mock_face3 = self.maker.OCCFace()
+        check_dict  = {'Face0':{'faceIndex':0,
+                                'edgeIndices':[0,1,2,3]},
+                       'Face1':{'faceIndex':1,
+                                'edgeIndices':[4,0,5,6]},
+                       'Face2':{'faceIndex':2,
+                                'edgeIndices':[7,8,1,9]}}
+
+        mock_face2.Edges[1].value = mock_face1.Edges[0].value
+        mock_face3.Edges[2].value = mock_face1.Edges[1].value
+
+        name1 = self.tracker.addFace(mock_face1)
+        name2 = self.tracker.addFace(mock_face2)
+        name3 = self.tracker.addFace(mock_face3)
+
+        self.assertEqual(self.tracker._faceNames, check_dict)
+
+    def test_addThreeFacesWithSharedEdgeError(self):
+        mock_face1 = self.maker.OCCFace()
+        mock_face2 = self.maker.OCCFace()
+        mock_face3 = self.maker.OCCFace()
+
+        sharedEdgeValue = mock_face1.Edges[0].value
+        mock_face2.Edges[2].value = sharedEdgeValue
+        mock_face3.Edges[3].value = sharedEdgeValue
 
         index1 = self.tracker.addFace(mock_face1)
-        mock_face1.Edges[0].isEqual.side_effect = [True] + [False]*3
         index2 = self.tracker.addFace(mock_face2)
 
-        realEdgeDict = {0:[index1, index2]}
-        openEdgeDict = {}
-        for i in range(1,7):
-            if i <= 3:
-                index = index1
-            else:
-                index = index2
-            openEdgeDict[i] = index
+        self.assertRaises(ValueError, self.tracker.addFace, mock_face3)
 
-        self.assertEqual(self.tracker._realEdges, realEdgeDict)
-        self.assertEqual(self.tracker._openEdges, openEdgeDict)
+    def test_ModifyFace(self):
+        mock_face0 = self.maker.OCCFace()
+        mock_face1 = self.maker.OCCFace()
+        mock_face2a = self.maker.OCCFace()
+        mock_face2b = self.maker.OCCFace()
+        check_dict  = {'Face0':{'faceIndex':0,
+                                'edgeIndices':[0,1,2,3]},
+                       'Face1':{'faceIndex':1,
+                                'edgeIndices':[0,4,5,6]},
+                       'Face2':{'faceIndex':2,
+                                'edgeIndices':[1,7,8,9]}}
 
-    # def test_getOpenEdges(self):
-        # edges = TopoEdges()
-        # edges.append(1)
-        # edges.append(2)
-        # self.assertEqual(edges.getOpenEdges(), [1,2])
-        # self.assertEqual(edges.getRealEdges(), [])
+        mock_face1.Edges[0].value = mock_face0.Edges[0].value
+        mock_face2a.Edges[0].value = mock_face0.Edges[1].value
+        mock_face2b.Edges[0].value = mock_face1.Edges[1].value
 
-    # def test_getRealEdges(self):
-        # edges = TopoEdges()
-        # edges.append(1)
-        # edges.append(1)
-        # edges.append(2)
-        # self.assertEqual(edges.getOpenEdges(), [2])
-        # self.assertEqual(edges.getRealEdges(), [1])
+        self.tracker.addFace(mock_face0) # Edges 0 - 3
+        self.tracker.addFace(mock_face1) # Edges 4 - 6 (one shared Edge)
+        facename = self.tracker.addFace(mock_face2a) # Edges 7 - 9 (one shared Edge)
 
-    # def test_getAllEdges(self):
-        # edges = TopoEdges()
-        # for i in [False, True, False, False, False]:
-            # mock_edge = mock.MagicMock(spec=FakeOCCEdge)
-            # mock_edge.isEqual
-            # edges.append(4)
-        # self.assertEqual(edges.getAllEdges(), [1,2,3,4])
+        self.tracker.modifyFace(facename, mock_face2b)
 
-    # def test_addEdgeError(self):
-        # edges = TopoEdges()
-        # occEdge = mock.MagicMock(spec=FakeOCCEdge)
-        # occEdge.isEqual.side_effect = [False, False, True]
-        # edges.append(occEdge)
-        # edges.append(occEdge)
-        # self.assertRaises(ValueError, edges.append, occEdge)
-
-class TestFaces(unittest.TestCase):
-    '''Tests the Face class defined in TopoNamer'''
-
-    def setUp(self):
-        self.faces = TopoFaces()
-        self.mock_occFace = mock.MagicMock(spec=FakeOCCFace)
-
-    def test_newFaces(self):
-        self.mock_occFace.isEqual.side_effect = [False]*20
-        for i in range(6):
-            key = self.faces.newFace(self.mock_occFace)
-        self.assertEqual(len(self.faces._faces), 6)
-        self.assertEqual(key, 5)
+        self.assertEqual(self.tracker._faceNames, check_dict)
 
 class TestNamer(unittest.TestCase):
 
     """Tests the TopoNamer class"""
 
-    @mock.patch('__main__.FakePartFeature.Shape', new_callable=mock.PropertyMock)
-    def setUp(self, mock_shape):
+    def setUp(self):
         self._myNamer = TopoNamer()
-        self.mock_feature = mock.MagicMock(name='PartFeature', spec_set=FakePartFeature())
+        self.maker = MockObjectMaker()
 
-    # @mock.patch('TopoNamer.TopoNamer.newFace')
-    # def test_makeBox(self, mock_newFace):
-        # self.mock_feature.Shape.Faces = range(6)
-        # self._myNamer.makeBox(self.mock_feature)
-        # self.assertEqual(mock_newFace.call_count, 6)
+    def test_makeBox(self):
+        mock_feature = self.maker.BoxFeature()
+        self._myNamer.addShape(mock_feature)
+        self.assertEqual(len(self._myNamer._tracker._faces), 6)
+        self.assertEqual(len(self._myNamer._tracker._realEdges), 12)
+
+    def test_makeCylinder(self):
+        mock_feature = self.maker.CylinderFeature()
+        self._myNamer.addShape(mock_feature)
+        self.assertEqual(len(self._myNamer._tracker._faces), 3)
+        self.assertEqual(len(self._myNamer._tracker._realEdges), 2)
+
+    def test_fuseCylinderAndBoxOfEqualHeight(self):
+        mock_box = self.maker.BoxFeature()
+        mock_cyl = self.maker.CylinderFeature()
+
+        # cylindrical face is new
+        newFaces = [self.maker.OCCFace()]
+        # top, bottom, front, and left of box are modified
+        modifiedFaces = [(mock_box.Shape.Faces[i], self.maker.OCCFace()) for i in range(4)]
+        # The cylindrical lateral face shares an edge with the front and left
+        # faces of the box. These are new edges for the cylinder, as it will
+        # still retain its seam edge.
+        mock_cyl.Shape.Faces[1].Edges.append(mock_box.Shape.Faces[0].Edges[0])
+        mock_cyl.Shape.Faces[1].Edges.append(mock_box.Shape.Faces[0].Edges[1])
+
+        self._myNamer.addShape(mock_box)
+        self._myNamer.modifyShape(newFaces, modifiedFaces)
+
+        self.assertEqual(len(self._myNamer._tracker._realEdges), 14)
 
     def tearDown(self):
         pass
