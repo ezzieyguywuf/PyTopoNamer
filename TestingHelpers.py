@@ -84,7 +84,7 @@ class MockObjectMaker(object):
         edges = [self.OCCEdge() for i in range(3)]
         bot_face = self.OCCFace(edges=[edges[0]])
         top_face = self.OCCFace(edges=[edges[1]])
-        lat_face = self.OCCFace(edges=[*edges])
+        lat_face = self.OCCFace(edges=edges)
 
         mock_feature.Shape.Faces = [bot_face, top_face, lat_face]
         return mock_feature

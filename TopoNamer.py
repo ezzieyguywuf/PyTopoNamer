@@ -28,11 +28,26 @@ class TopoEdgeAndFaceTracker(object):
         # names of the Edges that this face has
         self._faceNames = {}
 
-    def _makeName(self, which, index):
-        if which is 'face':
-            name = 'Face{}'.format(index)
-        elif which is 'edge':
-            name = 'Edge{}'.format(index)
+    def _makeName(self, base, sub=False):
+        if sub == False:
+            if base == 'Face':
+                index = len(self._faces) - 1
+            elif base == 'Edge':
+                index = len(self._edges) - 1
+            else:
+                msg = 'Must be either \'Face\' or \'Edge\''
+                raise ValueError(msg)
+        else:
+            cur_letter = base[-1]
+            if cur_letter.isdigit():
+                index = 'a'
+            elif cur_letter == 'z':
+                base = base[:-1]
+                index = 'aa'
+            else:
+                base = base[:-1]
+                index = chr(ord(cur_letter) + 1)
+        name = '{}{}'.format(base, index)
         return name
 
     def _addEdge(self, OCCEdge, faceName):
@@ -53,7 +68,7 @@ class TopoEdgeAndFaceTracker(object):
         if isAdded == False:
             self._edges.append(OCCEdge)
             index = len(self._edges) - 1
-            edgeName = self._makeName('edge', index)
+            edgeName = self._makeName('Edge')
             self._edgeNames[edgeName] = {'numbShared':1,
                                          'edgeIndex':index}
         return edgeName
@@ -65,8 +80,17 @@ class TopoEdgeAndFaceTracker(object):
             names.append(name)
         return names
 
-    def _delEdge(self, index):
-        self._edges[index] = None
+    def _replaceEdge(self, edgeName, newEdge):
+        index = self._edgeNames[edgeName]['edgeIndex']
+        self._edges[index] = newEdge
+
+    def _splitEdge(self, edgeName, newEdges):
+        # the first newEdge will simply replace the existing Edge
+        index = self._edgeNames[edgeName]['edgeIndex']
+        self._edges[index] = newEdges[0]
+
+        # the balance will be new edges
+        self._addEdges(newEdges[1:])
 
     def addFace(self, OCCFace):
         for i,face in enumerate(self._faces):
@@ -75,7 +99,7 @@ class TopoEdgeAndFaceTracker(object):
                 raise ValueError(msg)
         self._faces.append(OCCFace)
         index = len(self._faces) - 1
-        faceName = self._makeName('face', index)
+        faceName = self._makeName('Face')
         names = self._addEdges(OCCFace.Edges, faceName)
         self._faceNames[faceName] = {'faceIndex':index,
                                      'edgeNames':names}
@@ -89,11 +113,11 @@ class TopoEdgeAndFaceTracker(object):
         index = faceData['faceIndex']
 
         self._faces[index] = newFaceShape
-        for i in faceData['edgeIndices']:
-            self._delEdge(i)
+        for edgeName in faceData['edgeNames']:
+            self._delEdge(edgeName)
 
-        indices = self._addEdges(newFaceShape.Edges, oldFaceName)
-        self._faceNames[oldFaceName]['edgeIndices'] = indices
+        edgeNames = self._addEdges(newFaceShape.Edges, oldFaceName)
+        self._faceNames[oldFaceName]['edgeNames'] = edgeNames
 
 class TopoNamer(object):
 
