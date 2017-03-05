@@ -79,7 +79,7 @@ class TestTracker(unittest.TestCase):
                                'openEdges':4}}
         edges = {'Edge0':['Face0', 'Face1']}
 
-        self.tracker._openFaceNames = open_faces
+        self.tracker._openFaceNames = open_faces.copy()
 
         self.tracker._updateEdge(face0.Edges[0], 'Face0')
 
