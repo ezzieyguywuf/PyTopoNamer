@@ -56,18 +56,17 @@ class TestTracker(unittest.TestCase):
         mock_face2  = self.maker.OCCFace()
         check_name0 = 'Face0'
         check_name1 = 'Face1'
-        check_dict  = {check_name0:{'faceIndex':0,
-                                    'edgeNames':['Edge{}'.format(i) for i in range(4)]},
-                       check_name1:{'faceIndex':1,
-                                    'edgeNames':['Edge{}'.format(i) for i in range(4,8)]}}
+        open_faces  = {check_name0:{'faceShape':mock_face1,
+                                    'openEdges':4},
+                       check_name1:{'faceShape':mock_face2,
+                                    'openEdges':4}}
 
         name0 = self.tracker.addFace(mock_face1)
         name1 = self.tracker.addFace(mock_face2)
 
-        self.assertEqual(self.tracker._faces, [mock_face1, mock_face2])
+        self.assertEqual(self.tracker._openFaceNames, open_faces)
         self.assertEqual(name0, check_name0)
         self.assertEqual(name1, check_name1)
-        self.assertEqual(self.tracker._faceNames, check_dict)
 
     def test_addTwoFacesWithSharedEdge(self):
         mock_face1 = self.maker.OCCFace()
