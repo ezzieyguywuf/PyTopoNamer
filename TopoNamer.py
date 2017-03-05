@@ -75,7 +75,6 @@ class TopoEdgeAndFaceTracker(object):
         '''Add a named tracked Edge.
 
         This edge is defined by the two faces that have this Edge in common.'''
-        print('adding Edge {} {}. _edgeNames = {}'.format(faceName1, faceName2, self._edgeNames))
         faceNames = [faceName1, faceName2]
         edgeName = self._makeName('Edge')
         faceNames.sort()
@@ -85,7 +84,7 @@ class TopoEdgeAndFaceTracker(object):
         numbEdges = self._openFaceNames[faceName]['openEdges']
         if numbEdges == 1:
             face = self._openFaceNames.pop(faceName)
-            self._closedFaces[faceName] = face['faceShape']
+            self._closedFaceNames[faceName] = face['faceShape']
         else:
             self._openFaceNames[faceName]['openEdges'] = numbEdges - 1
 

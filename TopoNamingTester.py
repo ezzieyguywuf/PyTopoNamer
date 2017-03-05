@@ -40,7 +40,7 @@ class TestTracker(unittest.TestCase):
         face = self.maker.OCCFace()
         open_faces = {'Face0':{'faceShape':face,
                                'openEdges':4}}
-        self.tracker._openFaceNames = open_faces
+        self.tracker._openFaceNames = open_faces.copy()
         self.tracker._updateFace('Face0')
 
         open_faces['Face0']['openedges'] = 3
@@ -51,10 +51,11 @@ class TestTracker(unittest.TestCase):
         open_faces = {'Face0':{'faceShape':face,
                                'openEdges':1}}
 
-        self.tracker._openFaceNames = open_faces
+        self.tracker._openFaceNames = open_faces.copy()
         self.tracker._updateFace('Face0')
 
-        open_faces['Face0']['openedges'] = 3
+        open_faces = {'Face0':{'faceShape':face,
+                               'openEdges':3}}
         self.assertEqual(self.tracker._openFaceNames, {})
         self.assertEqual(self.tracker._closedFaceNames, {'Face0':face})
 
