@@ -48,6 +48,14 @@ class TopoEdgeAndFaceTracker(object):
         name = '{}{}'.format(base, index)
         return name
 
+    def _addEdge(self, faceName1, faceName2):
+        '''Add a named tracked Edge.
+
+        This edge is defined by the two faces that have this Edge in common.'''
+
+        edgeName = self._makeName('Edge')
+        self._edgeNames[edgeName] = [faceName1, faceName2]
+
     def _updateFace(self, faceName):
         numbEdges = self._openFaceNames[faceName]['openEdges']
         if numbEdges == 1:
