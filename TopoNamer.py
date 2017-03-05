@@ -48,14 +48,22 @@ class TopoEdgeAndFaceTracker(object):
         name = '{}{}'.format(base, index)
         return name
 
+    def _updateEdge(self, edge):
+        for faceName, data in self._openFaceNames.items():
+            face = data['faceShape']
+
     def addFace(self, OCCFace):
         for face in self._getAllFaces():
             if face.isEqual(OCCFace):
                 msg = 'Cannot add the same face more than once.'
                 raise ValueError(msg)
         faceName = self._makeName('Face')
+        numbEdges = len(OCCFace.Edges)
         self._openFaceNames[faceName] = {'faceShape':OCCFace,
-                                         'openEdges':len(OCCFace.Edges)}
+                                         'openEdges':numbEdges}
+        for Edge in OCCFace.Edges:
+            self._updateEdge(Edge)
+
         return faceName
 
     def modifyFace(self, oldFaceName, newFaceShape):
