@@ -11,13 +11,15 @@ class TestTracker(unittest.TestCase):
         self.tracker = TopoEdgeAndFaceTracker()
 
     def test_makeName(self):
-        self.tracker._faces = [None]
-        self.tracker._edges = [None, None, None]
+        self.tracker._numbFaces = 0
+        self.tracker._numbEdges = 2
         name0 = self.tracker._makeName('Face')
         name1 = self.tracker._makeName('Edge')
 
         self.assertEqual(name0, 'Face0')
         self.assertEqual(name1, 'Edge2')
+        name1 = self.tracker._makeName('Edge')
+        self.assertEqual(name1, 'Edge3')
 
     def test_makeSubName(self):
         name0 = self.tracker._makeName('Face1', sub=True)
