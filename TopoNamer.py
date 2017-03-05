@@ -48,21 +48,45 @@ class TopoEdgeAndFaceTracker(object):
         name = '{}{}'.format(base, index)
         return name
 
-    def _updateEdge(self, edge):
-        for faceName, data in self._openFaceNames.items():
+    def _updateFace(self, faceName):
+        numbEdges = self._openFaceNames[faceName]['openEdges']
+        if numbEdges == 1:
+            face = self._openFaceNames.pop(faceName)
+            self._closedFaces[faceName] = face['faceShape']
+        else:
+            self._openFaceNames[faceName]['openEdges'] = numbEdges - 1
+
+    def _updateEdge(self, Edge1, faceName1):
+        '''Check if `Edge1` is present in any 'open' Face.
+
+        If it is, returns True and calls `_updateFace` for the 'open' face that matches'''
+        for faceName2, data in self._openFaceNames.items():
             face = data['faceShape']
+            for Edge2 in face.Edges:
+                if Edge1.isEqual(Edge2):
+                    self._updateFace(faceName2)
+                    self._addEdge(faceName1, faceName2)
+                    return True
 
     def addFace(self, OCCFace):
+        '''Add an OpenCascade Face object to the tracked Faces list
+
+        This will also check all the OpenCascadeEdges in `OCCFace` against all the Edges
+        in the currently 'open' tracked Faces. Any Edges that are present in both
+        `OCCFace` and an 'open' tracked Face will be added to the list of tracked named
+        Edges'''
         for face in self._getAllFaces():
             if face.isEqual(OCCFace):
                 msg = 'Cannot add the same face more than once.'
                 raise ValueError(msg)
         faceName = self._makeName('Face')
         numbEdges = len(OCCFace.Edges)
+
+        for Edge in OCCFace.Edges:
+            self._updateEdge(Edge, faceName)
+
         self._openFaceNames[faceName] = {'faceShape':OCCFace,
                                          'openEdges':numbEdges}
-        for Edge in OCCFace.Edges:
-            self._updateEdge(Edge)
 
         return faceName
 

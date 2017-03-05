@@ -30,6 +30,28 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(name2, 'Face1aaa')
         self.assertEqual(name3, 'Edge2aa')
 
+    def test_updateFaceStillOpen(self):
+        face = self.maker.OCCFace()
+        open_faces = {'Face0':{'faceShape':face,
+                               'openEdges':4}}
+        self.tracker._openFaceNames = open_faces
+        self.tracker._updateFace('Face0')
+
+        open_faces['Face0']['openedges'] = 3
+        self.assertEqual(self.tracker._openFaceNames, open_faces)
+
+    def test_updateFaceClosed(self):
+        face = self.maker.OCCFace()
+        open_faces = {'Face0':{'faceShape':face,
+                               'openEdges':1}}
+
+        self.tracker._openFaceNames = open_faces
+        self.tracker._updateFace('Face0')
+
+        open_faces['Face0']['openedges'] = 3
+        self.assertEqual(self.tracker._openFaceNames, {})
+        self.assertEqual(self.tracker._closedFaceNames, {'Face0':face})
+
     def test_updateEdgeWithNonSharedFace(self):
         face = self.maker.OCCFace()
         edge = self.maker.OCCEdge()
@@ -39,6 +61,25 @@ class TestTracker(unittest.TestCase):
 
         self.tracker._updateEdge(edge)
         self.assertEqual(self.tracker._openFaceNames, open_faces)
+
+    def test_updateEdgeWithSharedFace(self):
+        face0 = self.maker.OCCFace()
+        face1 = self.maker.OCCFace()
+        edge = self.maker.OCCEdge()
+        open_faces = {'Face0':{'faceShape':face0,
+                               'openEdges':4},
+                      'Face1':{'faceShape':face1,
+                               'openEdges':4}}
+        edges = {'Edge0':['Face0', 'Face1']}
+
+        self.tracker._openFaceNames = open_faces
+
+        self.tracker._updateEdge(edge)
+
+        for faceName in open_faces.keys():
+            open_faces[faceName]['openEdges'] = 3
+        self.assertEqual(self.tracker._openFaceNames, open_faces)
+        self.assertEqual(self.tracker._edgeNames, edges)
 
     def test_addFace(self):
         mock_face = self.maker.OCCFace()
