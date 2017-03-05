@@ -84,14 +84,6 @@ class TopoEdgeAndFaceTracker(object):
         index = self._edgeNames[edgeName]['edgeIndex']
         self._edges[index] = newEdge
 
-    def _splitEdge(self, edgeName, newEdges):
-        # the first newEdge will simply replace the existing Edge
-        index = self._edgeNames[edgeName]['edgeIndex']
-        self._edges[index] = newEdges[0]
-
-        # the balance will be new edges
-        self._addEdges(newEdges[1:])
-
     def addFace(self, OCCFace):
         for i,face in enumerate(self._faces):
             if face.isEqual(OCCFace):
@@ -113,8 +105,9 @@ class TopoEdgeAndFaceTracker(object):
         index = faceData['faceIndex']
 
         self._faces[index] = newFaceShape
-        for edgeName in faceData['edgeNames']:
-            self._delEdge(edgeName)
+        for i, edgeName in enumerate(faceData['edgeNames']):
+            newEdge = newFaceShape.Edges[i]
+            self._replaceEdge(edgeName, newEdge)
 
         edgeNames = self._addEdges(newFaceShape.Edges, oldFaceName)
         self._faceNames[oldFaceName]['edgeNames'] = edgeNames

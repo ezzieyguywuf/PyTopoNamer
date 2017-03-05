@@ -70,25 +70,6 @@ class TestTracker(unittest.TestCase):
         names = self.tracker._addEdges(edges, 'Face0')
         self.assertEqual(names, ['Edge{}'.format(i) for i in range(10)])
 
-    # def test_addSubEdge(self):
-        # edges = [self.maker.OCCEdge() for i in range(3)]
-        # check_dict = {'Edge0':'edgeIndex
-
-        # edgeName = self.tracker._addEdge(edges[0])
-        # self.tracker._addSubEdge(edgeName, edges[1:])
-
-    # def test_addSplitEdge(self):
-        # old_edges = [self.maker.OCCEdge() for i in range(3)]
-        # new_edges = [self.maker.OCCEdge() for i in range(3)]
-        # check_dict = {'Edge0': None,
-                      # 'Edge0a':{'edgeIndex':0,
-                                # 'numbShared':1},
-                      # 'Edge0b':{'edgeIndex':3,
-                                # 'numbShared':1}
-
-        # names = self.tracker._addEdge(old_edges)
-        # self.tracker._splitEdge(names[0], new_edges)
-
     def test_replaceEdge(self):
         mock_edge0  = self.maker.OCCEdge()
         mock_edge1  = self.maker.OCCEdge()
@@ -265,21 +246,21 @@ class TestTracker(unittest.TestCase):
         mock_face2a = self.maker.OCCFace()
         mock_face2b = self.maker.OCCFace()
         check_dict  = {'Face0':{'faceIndex':0,
-                                'edgeIndices':[0,1,2,3]},
+                                'edgeNames':['Edge{}'.format(i) for i in range(4)]},
                        'Face1':{'faceIndex':1,
-                                'edgeIndices':[0,4,5,6]},
+                                'edgeNames':['Edge{}'.format(i) for i in [0,4,5,6]]},
                        'Face2':{'faceIndex':2,
-                                'edgeIndices':[1,7,8,9]}}
+                                'edgeNames':['Edge{}'.format(i) for i in [4,7,8,9]]}}
 
         mock_face1.Edges[0].value = mock_face0.Edges[0].value
         mock_face2a.Edges[0].value = mock_face0.Edges[1].value
         mock_face2b.Edges[0].value = mock_face1.Edges[1].value
 
         self.tracker.addFace(mock_face0) # Edges 0 - 3
-        self.tracker.addFace(mock_face1) # Edges 4 - 6 (one shared Edge)
-        facename = self.tracker.addFace(mock_face2a) # Edges 7 - 9 (one shared Edge)
+        self.tracker.addFace(mock_face1) # Edges 0 and 4 - 6
+        facename = self.tracker.addFace(mock_face2a) # Edges 1 and 7 - 9
 
-        self.tracker.modifyFace(facename, mock_face2b)
+        self.tracker.modifyFace(facename, mock_face2b) # Edges 4 and 7-9
 
         self.assertEqual(self.tracker._faceNames, check_dict)
 
