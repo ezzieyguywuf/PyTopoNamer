@@ -14,6 +14,29 @@ class TopoEdgeAndFaceTracker(object):
         self._numbFaces = 0
         self._numbEdges = 0
 
+    def _isNamedEdge(self, Edge):
+        for edgeName in self._edgeNames.keys():
+            checkEdge = self.getEdge(edgeName)
+            if Edge.isEqual(checkEdge):
+                return True
+        return False
+
+    def _getFaceShape(self, faceName):
+        if faceName in self._openFaceNames.keys():
+            return self._openFaceNames[faceName]['faceShape']
+        elif faceName in self._closedFaceNames.keys():
+            return self._closedFaceNames[faceName]['faceShape']
+
+    def getEdge(self, edgeName):
+        face1, face2 = self._edgeNames[edgeName]
+        face1 = self._getFaceShape(face1)
+        face2 = self._getFaceShape(face2)
+
+        for edge1 in face1.Edges:
+            for edge2 in face2.Edges:
+                if edge1.isEqual(edge2):
+                    return edge1
+
     def _getAllFaces(self):
         faces = []
         for data in self._openFaceNames.values():
@@ -52,9 +75,9 @@ class TopoEdgeAndFaceTracker(object):
         '''Add a named tracked Edge.
 
         This edge is defined by the two faces that have this Edge in common.'''
-
-        edgeName = self._makeName('Edge')
+        print('adding Edge {} {}. _edgeNames = {}'.format(faceName1, faceName2, self._edgeNames))
         faceNames = [faceName1, faceName2]
+        edgeName = self._makeName('Edge')
         faceNames.sort()
         self._edgeNames[edgeName] = faceNames
 
@@ -74,9 +97,14 @@ class TopoEdgeAndFaceTracker(object):
             face = data['faceShape']
             for Edge2 in face.Edges:
                 if Edge1.isEqual(Edge2):
+                    check =  self._isNamedEdge(Edge1)
+                    if check == True:
+                        msg = 'Cannot have more than two Faces share any given Edge'
+                        raise ValueError(msg)
                     self._updateFace(faceName2)
                     self._addEdge(faceName1, faceName2)
                     return True
+        return False
 
     def addFace(self, OCCFace):
         '''Add an OpenCascade Face object to the tracked Faces list

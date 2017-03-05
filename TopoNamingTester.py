@@ -165,18 +165,18 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(self.tracker._edgeNames, edges)
 
     def test_addThreeFacesWithSharedEdgeError(self):
+        mock_face0 = self.maker.OCCFace()
         mock_face1 = self.maker.OCCFace()
         mock_face2 = self.maker.OCCFace()
-        mock_face3 = self.maker.OCCFace()
 
-        sharedEdgeValue = mock_face1.Edges[0].value
-        mock_face2.Edges[2].value = sharedEdgeValue
-        mock_face3.Edges[3].value = sharedEdgeValue
+        sharedEdgeValue = mock_face0.Edges[0].value
+        mock_face1.Edges[2].value = sharedEdgeValue
+        mock_face2.Edges[3].value = sharedEdgeValue
 
-        index1 = self.tracker.addFace(mock_face1)
-        index2 = self.tracker.addFace(mock_face2)
+        index1 = self.tracker.addFace(mock_face0)
+        index2 = self.tracker.addFace(mock_face1)
 
-        self.assertRaises(ValueError, self.tracker.addFace, mock_face3)
+        self.assertRaises(ValueError, self.tracker.addFace, mock_face2)
 
     def test_ModifyFace(self):
         mock_face0 = self.maker.OCCFace()
