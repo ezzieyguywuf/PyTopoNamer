@@ -84,6 +84,7 @@ class TestTracker(unittest.TestCase):
 
         for faceName in open_faces.keys():
             open_faces[faceName]['openEdges'] = 3
+
         self.assertEqual(self.tracker._openFaceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
 
@@ -131,7 +132,7 @@ class TestTracker(unittest.TestCase):
                                 'openEdges':3}}
         edges = {'Edge0': ['Face0', 'Face1']}
 
-        mock_face2.Edges[1].value = mock_face1.Edges[0].value
+        mock_face2.Edges[0].value = mock_face1.Edges[0].value
 
         name1 = self.tracker.addFace(mock_face1)
         name2 = self.tracker.addFace(mock_face2)

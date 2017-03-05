@@ -54,7 +54,9 @@ class TopoEdgeAndFaceTracker(object):
         This edge is defined by the two faces that have this Edge in common.'''
 
         edgeName = self._makeName('Edge')
-        self._edgeNames[edgeName] = [faceName1, faceName2]
+        faceNames = [faceName1, faceName2]
+        faceNames.sort()
+        self._edgeNames[edgeName] = faceNames
 
     def _updateFace(self, faceName):
         numbEdges = self._openFaceNames[faceName]['openEdges']
@@ -91,7 +93,9 @@ class TopoEdgeAndFaceTracker(object):
         numbEdges = len(OCCFace.Edges)
 
         for Edge in OCCFace.Edges:
-            self._updateEdge(Edge, faceName)
+            match = self._updateEdge(Edge, faceName)
+            if match == True:
+                numbEdges -= 1
 
         self._openFaceNames[faceName] = {'faceShape':OCCFace,
                                          'openEdges':numbEdges}
