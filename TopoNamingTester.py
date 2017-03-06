@@ -16,25 +16,25 @@ class TestTracker(unittest.TestCase):
         name0 = self.tracker._makeName('Face')
         name1 = self.tracker._makeName('Edge')
 
-        self.assertEqual(name0, 'Face0')
-        self.assertEqual(name1, 'Edge2')
+        self.assertEqual(name0, 'Face000')
+        self.assertEqual(name1, 'Edge002')
         name1 = self.tracker._makeName('Edge')
-        self.assertEqual(name1, 'Edge3')
+        self.assertEqual(name1, 'Edge003')
 
     def test_makeSubName(self):
-        name0 = self.tracker._makeName('Face1', sub=True)
-        name1 = self.tracker._makeName('Edge2bb', sub=True)
-        name2 = self.tracker._makeName('Face1az', sub=True)
-        name3 = self.tracker._makeName('Edge2z', sub=True)
+        name0 = self.tracker._makeName('Face001', sub=True)
+        name1 = self.tracker._makeName('Edge002bb', sub=True)
+        name2 = self.tracker._makeName('Face001az', sub=True)
+        name3 = self.tracker._makeName('Edge002z', sub=True)
 
-        self.assertEqual(name0, 'Face1a')
-        self.assertEqual(name1, 'Edge2bc')
-        self.assertEqual(name2, 'Face1aaa')
-        self.assertEqual(name3, 'Edge2aa')
+        self.assertEqual(name0, 'Face001a')
+        self.assertEqual(name1, 'Edge002bc')
+        self.assertEqual(name2, 'Face001aaa')
+        self.assertEqual(name3, 'Edge002aa')
 
     def test_addEdge(self):
-        self.tracker._addEdge('Face0', 'Face1')
-        edges = {'Edge0':['Face0', 'Face1']}
+        self.tracker._addEdge('Face000', 'Face001')
+        edges = {'Edge000':['Face000', 'Face001']}
 
         self.assertEqual(self.tracker._edgeNames, edges)
 
@@ -42,77 +42,77 @@ class TestTracker(unittest.TestCase):
         face0 = self.maker.OCCFace()
         face1 = self.maker.OCCFace()
         face1.Edges[0] = face0.Edges[0]
-        self.tracker._edgeNames = {'Edge0':['Face0', 'Face1']}
-        self.tracker._faceNames = {'Face0':{'faceShape':face0},
-                                   'Face1':{'faceShape':face1}}
+        self.tracker._edgeNames = {'Edge000':['Face000', 'Face001']}
+        self.tracker._faceNames = {'Face000':{'faceShape':face0},
+                                   'Face001':{'faceShape':face1}}
 
-        edge = self.tracker.getEdge('Edge0')
+        edge = self.tracker.getEdge('Edge000')
         self.assertEqual(edge, face0.Edges[0])
 
     def test_getEdgeInvalidNameError(self):
-        self.assertRaises(KeyError, self.tracker.getEdge, 'Edge0')
+        self.assertRaises(KeyError, self.tracker.getEdge, 'Edge000')
 
     def test_getEdgeNoTwoFacesError(self):
         face0 = self.maker.OCCFace()
         face1 = self.maker.OCCFace()
-        self.tracker._edgeNames = {'Edge0':['Face0', 'Face1']}
-        self.tracker._faceNames = {'Face0':{'faceShape':face0},
-                                   'Face1':{'faceShape':face1}}
+        self.tracker._edgeNames = {'Edge000':['Face000', 'Face001']}
+        self.tracker._faceNames = {'Face000':{'faceShape':face0},
+                                   'Face001':{'faceShape':face1}}
 
-        self.assertRaises(ValueError, self.tracker.getEdge, 'Edge0')
+        self.assertRaises(ValueError, self.tracker.getEdge, 'Edge000')
 
     def test_updateEdgeWithNonSharedFace(self):
         face = self.maker.OCCFace()
         edge = self.maker.OCCEdge()
-        open_faces = {'Face0':{'faceShape':face,
+        open_faces = {'Face000':{'faceShape':face,
                                'openEdges':4}}
         self.tracker._faceNames = open_faces.copy()
 
-        self.tracker._updateEdge(edge, 'Face0')
+        self.tracker._updateEdge(edge, 'Face000')
         self.assertEqual(self.tracker._faceNames, open_faces)
 
     def test_updateEdgeWithSharedFace(self):
         face0 = self.maker.OCCFace()
-        open_faces = {'Face0':{'faceShape':face0,
+        open_faces = {'Face000':{'faceShape':face0,
                                'openEdges':4}}
-        edges = {'Edge0':['Face0', 'Face1']}
+        edges = {'Edge000':['Face000', 'Face001']}
 
         self.tracker._faceNames = open_faces.copy()
 
-        self.tracker._updateEdge(face0.Edges[0], 'Face1')
+        self.tracker._updateEdge(face0.Edges[0], 'Face001')
 
-        open_faces['Face0']['openEdges'] = 3
+        open_faces['Face000']['openEdges'] = 3
         self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
 
     # def test_checkEdges(self):
-        # edgeNames = {'Edge0':['Face0', 'Face1']}
+        # edgeNames = {'Edge000':['Face000', 'Face001']}
         # self.tracker._edgeNames = edgeNames.copy()
-        # self.tracker._faceNames = {'Face0':{'openEdges':0},
-                                   # 'Face1':{'openEdges':0}}
+        # self.tracker._faceNames = {'Face000':{'openEdges':0},
+                                   # 'Face001':{'openEdges':0}}
         # self.tracker._checkEdges()
         # self.assertEqual(self.tracker._edgeNames, edgeNames)
 
     # def test_checkEdgesSomeRemoved(self):
-        # self.tracker._edgeNames = {'Edge0':['Face0', 'Face1'],
-                                   # 'Edge1':['Face2', 'Face3'],
-                                   # 'Edge2':['Face2', 'Face4'],
-                                   # 'Edge3':['Face1', 'Face3']}
-        # self.tracker._faceNames = {'Face0':{'openEdges':1},
-                                   # 'Face1':{'openEdges':0},
-                                   # 'Face2':{'openEdges':0},
-                                   # 'Face3':{'openEdges':0},
-                                   # 'Face4':{'openEdges':1}}
+        # self.tracker._edgeNames = {'Edge000':['Face000', 'Face001'],
+                                   # 'Edge001':['Face002', 'Face003'],
+                                   # 'Edge002':['Face002', 'Face004'],
+                                   # 'Edge003':['Face001', 'Face003']}
+        # self.tracker._faceNames = {'Face000':{'openEdges':1},
+                                   # 'Face001':{'openEdges':0},
+                                   # 'Face002':{'openEdges':0},
+                                   # 'Face003':{'openEdges':0},
+                                   # 'Face004':{'openEdges':1}}
         # self.tracker._checkEdges()
         # self.assertEqual(self.tracker._edgeNames,
-                # {'Edge0':None,
-                 # 'Edge1':['Face2', 'Face3'],
-                 # 'Edge2':None,
-                 # 'Edge3':['Face1', 'Face3']})
+                # {'Edge000':None,
+                 # 'Edge001':['Face002', 'Face003'],
+                 # 'Edge002':None,
+                 # 'Edge003':['Face001', 'Face003']})
 
     def test_addFace(self):
         mock_face = self.maker.OCCFace()
-        check_name = 'Face0'
+        check_name = 'Face000'
         check_dict = {check_name:{'faceShape':mock_face,
                                   'openEdges':4}}
 
@@ -131,8 +131,8 @@ class TestTracker(unittest.TestCase):
     def test_addTwoFacesWithZeroSharedEdges(self):
         mock_face1  = self.maker.OCCFace()
         mock_face2  = self.maker.OCCFace()
-        check_name0 = 'Face0'
-        check_name1 = 'Face1'
+        check_name0 = 'Face000'
+        check_name1 = 'Face001'
         open_faces  = {check_name0:{'faceShape':mock_face1,
                                     'openEdges':4},
                        check_name1:{'faceShape':mock_face2,
@@ -148,11 +148,11 @@ class TestTracker(unittest.TestCase):
     def test_addTwoFacesWithSharedEdge(self):
         mock_face1 = self.maker.OCCFace()
         mock_face2 = self.maker.OCCFace()
-        open_faces  = {'Face0':{'faceShape':mock_face1,
+        open_faces  = {'Face000':{'faceShape':mock_face1,
                                 'openEdges':3},
-                       'Face1':{'faceShape':mock_face2,
+                       'Face001':{'faceShape':mock_face2,
                                 'openEdges':3}}
-        edges = {'Edge0': ['Face0', 'Face1']}
+        edges = {'Edge000': ['Face000', 'Face001']}
 
         mock_face2.Edges[0].value = mock_face1.Edges[0].value
 
@@ -170,14 +170,14 @@ class TestTracker(unittest.TestCase):
         mock_face1.Edges[1].value = mock_face0.Edges[0].value
         mock_face2.Edges[2].value = mock_face0.Edges[1].value
 
-        face_names  = {'Face0':{'faceShape':mock_face0,
+        face_names  = {'Face000':{'faceShape':mock_face0,
                                 'openEdges':2},
-                       'Face1':{'faceShape':mock_face1,
+                       'Face001':{'faceShape':mock_face1,
                                 'openEdges':3},
-                       'Face2':{'faceShape':mock_face2,
+                       'Face002':{'faceShape':mock_face2,
                                 'openEdges':3}}
-        edges = {'Edge0':['Face0', 'Face1'],
-                 'Edge1':['Face0', 'Face2']}
+        edges = {'Edge000':['Face000', 'Face001'],
+                 'Edge001':['Face000', 'Face002']}
 
         name1 = self.tracker.addFace(mock_face0)
         name2 = self.tracker.addFace(mock_face1)
@@ -205,11 +205,11 @@ class TestTracker(unittest.TestCase):
         mock_face1 = self.maker.OCCFace()
         mock_face2a = self.maker.OCCFace()
         mock_face2b = self.maker.OCCFace()
-        check_dict  = {'Face0':{'faceShape':mock_face0,
+        check_dict  = {'Face000':{'faceShape':mock_face0,
                                 'openEdges':3},
-                       'Face1':{'faceShape':mock_face1,
+                       'Face001':{'faceShape':mock_face1,
                                 'openEdges':2},
-                       'Face2':{'faceShape':mock_face2b,
+                       'Face002':{'faceShape':mock_face2b,
                                 'openEdges':3}}
 
         mock_face1.Edges[0].value = mock_face0.Edges[0].value
@@ -234,9 +234,9 @@ class TestTracker(unittest.TestCase):
         mock_face0a = self.maker.OCCFace()
         mock_face0b = self.maker.OCCFace()
         mock_face1 = self.maker.OCCFace()
-        check_dict  = {'Face0':{'faceShape':mock_face0b,
+        check_dict  = {'Face000':{'faceShape':mock_face0b,
                                 'openEdges':4},
-                       'Face1':{'faceShape':mock_face1,
+                       'Face001':{'faceShape':mock_face1,
                                 'openEdges':3}}
 
         # really most of these Edges will change, but for this test that is not relevant.
@@ -261,7 +261,7 @@ class TestNamer(unittest.TestCase):
         for edgeName, faces in self.myNamer._tracker._edgeNames.items():
             if check == faces:
                 return self.myNamer._tracker.getEdge(edgeName)
-        msg = 'Edge not found for {}, between {}'.format(check)
+        msg = 'Edge not found between {}'.format(check)
         raise ValueError(msg)
 
     def setUp(self):
@@ -293,35 +293,42 @@ class TestNamer(unittest.TestCase):
         newEdges = [self.maker.OCCEdge() for i in range(4)]
 
         new_faces = [chamfer_face]
-        modified_faces = [['Face{}'.format(i), self.maker.OCCFace()] for i in [0,2,3,4]]
+        modified_faces = [['Face{:03d}'.format(i), self.maker.OCCFace()] for i in [0,2,3,4]]
 
         # front face shares edges with top and bottom as well as existing right and the
         # new face
         modified_faces[0][1].Edges[0] = modified_faces[1][1].Edges[0]
         modified_faces[0][1].Edges[1] = modified_faces[2][1].Edges[0]
-        modified_faces[0][1].Edges[2] = self.getEdge('Face0', 'Face5')
+        modified_faces[0][1].Edges[2] = self.getEdge('Face000', 'Face005')
         modified_faces[0][1].Edges[3] = chamfer_face.Edges[0]
 
         # left face shares edges with top and bottom as well as existing back and the new
         # face
         modified_faces[3][1].Edges[0] = modified_faces[1][1].Edges[1]
         modified_faces[3][1].Edges[1] = modified_faces[2][1].Edges[1]
-        modified_faces[3][1].Edges[2] = self.getEdge('Face4','Face1')
+        modified_faces[3][1].Edges[2] = self.getEdge('Face004','Face001')
         modified_faces[3][1].Edges[3] = chamfer_face.Edges[1]
 
         # top face shares edges with front (above), left (above), existing right, existing
         # back, as well as the new face
-        modified_faces[1][1].Edges[2] = self.getEdge('Face2', 'Face5')
-        modified_faces[1][1].Edges[3] = self.getEdge('Face2', 'Face1')
+        modified_faces[1][1].Edges[2] = self.getEdge('Face002', 'Face005')
+        modified_faces[1][1].Edges[3] = self.getEdge('Face002', 'Face001')
         modified_faces[1][1].Edges.append(chamfer_face.Edges[2])
 
         # bot face shares edges with front (above), left (above), existing right, existing
         # back, as well as the new face
-        modified_faces[2][1].Edges[2] = self.getEdge('Face3', 'Face5')
-        modified_faces[2][1].Edges[3] = self.getEdge('Face3', 'Face1')
+        modified_faces[2][1].Edges[2] = self.getEdge('Face003', 'Face005')
+        modified_faces[2][1].Edges[3] = self.getEdge('Face003', 'Face001')
         modified_faces[2][1].Edges.append(chamfer_face.Edges[3])
 
         self.myNamer.modifyShape(newFaces=new_faces, modifiedFaces=modified_faces)
+        # import pdb; pdb.set_trace()
+        realEdges = []
+        for edgeName, faces in self.myNamer._tracker._edgeNames.items():
+            if len(faces) == 2:
+                realEdges.append(edgeName)
+        import pdb; pdb.set_trace()
+        self.assertEqual(len(realEdges), 17)
 
     def test_fuseCylinderAndBoxOfEqualHeight(self):
         # The cylinder will be taller than the box and will be centered vertically along
@@ -353,15 +360,15 @@ class TestNamer(unittest.TestCase):
         newFaces[1].Edges[0] = newFaces[2].Edges[5]
 
         # front, top, bot, and left of box are modified
-        modifiedFaces = [['Face{}'.format(i), self.maker.OCCFace()] for i in [0,2,3,4]]
+        modifiedFaces = [['Face{:03d}'.format(i), self.maker.OCCFace()] for i in [0,2,3,4]]
         # first set all the edges from the existing edges, since things will change
         # further on
-        modifiedFaces[0][1].Edges[2] = getEdge('Face0', 'Face5')
-        modifiedFaces[1][1].Edges[2] = getEdge('Face2', 'Face5')
-        modifiedFaces[1][1].Edges[3] = getEdge('Face2', 'Face1')
-        modifiedFaces[2][1].Edges[2] = getEdge('Face3', 'Face5')
-        modifiedFaces[2][1].Edges[3] = getEdge('Face3', 'Face1')
-        modifiedFaces[3][1].Edges[2] = getEdge('Face4', 'Face1')
+        modifiedFaces[0][1].Edges[2] = self.getEdge('Face000', 'Face005')
+        modifiedFaces[1][1].Edges[2] = self.getEdge('Face002', 'Face005')
+        modifiedFaces[1][1].Edges[3] = self.getEdge('Face002', 'Face001')
+        modifiedFaces[2][1].Edges[2] = self.getEdge('Face003', 'Face005')
+        modifiedFaces[2][1].Edges[3] = self.getEdge('Face003', 'Face001')
+        modifiedFaces[3][1].Edges[2] = self.getEdge('Face004', 'Face001')
         # these modified faces share Edges with each other or with existing Edges
         # modifiedFront shares edge with modifiedTop, modifiedBottom, existing right
         # (above), and lateral face in newFaces

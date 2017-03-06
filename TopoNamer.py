@@ -19,8 +19,9 @@ class TopoEdgeAndFaceTracker(object):
                 checkEdge = self.getEdge(edgeName)
             except (KeyError, ValueError):
                 return False
-            if Edge.isEqual(checkEdge):
-                return True
+            else:
+                if Edge.isEqual(checkEdge):
+                    return True
         return False
 
     def getEdge(self, edgeName):
@@ -56,7 +57,7 @@ class TopoEdgeAndFaceTracker(object):
             else:
                 base = base[:-1]
                 index = chr(ord(cur_letter) + 1)
-        name = '{}{}'.format(base, index)
+        name = '{}{:03d}'.format(base, index)
         return name
 
     def _addEdge(self, faceName1, faceName2):
@@ -119,6 +120,10 @@ class TopoEdgeAndFaceTracker(object):
             raise ValueError(msg)
 
         oldFace = self._faceNames.pop(oldFaceName)
+        for edgeName, faces in self._edgeNames.items():
+            if oldFaceName in faces:
+                index = self._edgeNames[edgeName].index(oldFaceName)
+                self._edgeNames[edgeName].pop(index)
         oldFace['faceShape'] = newFaceShape
         oldFace['openEdges'] = len(newFaceShape.Edges)
 
