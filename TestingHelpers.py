@@ -64,16 +64,31 @@ class MockObjectMaker(object):
         return mock_face
 
     def BoxFeature(self):
+        # Front = Face0
+        # Back  = Face1
+        # Top   = Face2
+        # Bot   = Face3
+        # Left  = Face4
+        # Right = Face5
         mock_feature = self.FreeCADFeature()
 
         faces = [self.OCCFace() for i in range(6)]
 
-        faces[2].Edges[0] = faces[0].Edges[0]
-        faces[2].Edges[1] = faces[1].Edges[0]
-        faces[3].Edges[0] = faces[0].Edges[1]
-        faces[3].Edges[1] = faces[1].Edges[1]
-        faces[4].Edges = [faces[0].Edges[2], faces[0].Edges[3], faces[2].Edges[2], faces[3].Edges[2]]
-        faces[5].Edges = [faces[1].Edges[2], faces[1].Edges[3], faces[2].Edges[3], faces[3].Edges[3]]
+        faces[0].Edges[0] = faces[2].Edges[0]
+        faces[0].Edges[1] = faces[3].Edges[0]
+        faces[0].Edges[2] = faces[4].Edges[0]
+        faces[0].Edges[3] = faces[5].Edges[0]
+
+        faces[1].Edges[0] = faces[2].Edges[1]
+        faces[1].Edges[1] = faces[3].Edges[1]
+        faces[1].Edges[2] = faces[4].Edges[1]
+        faces[1].Edges[3] = faces[5].Edges[1]
+
+        faces[2].Edges[2] = faces[4].Edges[2]
+        faces[2].Edges[3] = faces[5].Edges[2]
+
+        faces[3].Edges[2] = faces[4].Edges[3]
+        faces[3].Edges[3] = faces[5].Edges[3]
 
         mock_feature.Shape.Faces = faces
         return mock_feature

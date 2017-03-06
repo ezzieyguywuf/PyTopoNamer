@@ -17,7 +17,7 @@ class TopoEdgeAndFaceTracker(object):
         for edgeName in self._edgeNames.keys():
             try:
                 checkEdge = self.getEdge(edgeName)
-            except KeyError:
+            except (KeyError, ValueError):
                 return False
             if Edge.isEqual(checkEdge):
                 return True
@@ -88,14 +88,6 @@ class TopoEdgeAndFaceTracker(object):
                     return True
         return False
 
-    def _checkEdges(self):
-        '''Verify that all named Edges still have two faces each.'''
-        for edgeName,faces in self._edgeNames.items():
-            openEdges0 = self._faceNames[faces[0]]['openEdges']
-            openEdges1 = self._faceNames[faces[1]]['openEdges']
-            if openEdges0 != 0 or openEdges1 !=0:
-                self._edgeNames[edgeName] = None
-
     def addFace(self, OCCFace):
         '''Add an OpenCascade Face object to the tracked Faces list
 
@@ -142,8 +134,8 @@ class TopoEdgeAndFaceTracker(object):
             match = self._updateEdge(Edge, oldFaceName)
             if match == True:
                 oldFace['openEdges'] -= 1
+
         self._faceNames[oldFaceName] = oldFace
-        self._checkEdges()
 
 class TopoNamer(object):
 
@@ -165,10 +157,11 @@ class TopoNamer(object):
         if all([i is None for i in [newFaces, modifiedFaces, deletedFaces]]):
             msg = 'At least one of newFaces, modifiedFaces, or deletedFaces must be provided'
             raise ValueError(msg)
+
         if not newFaces is None:
             for face in newFaces:
                 self._tracker.addFace(face)
 
         if not modifiedFaces is None:
-            for oldFace, newFace in modifiedFaces:
-                self._tracker.modifyFace(oldFace, newFace)
+            for oldFaceName, newFace in modifiedFaces:
+                self._tracker.modifyFace(oldFaceName, newFace)
