@@ -15,7 +15,10 @@ class TopoEdgeAndFaceTracker(object):
 
     def _isNamedEdge(self, Edge):
         for edgeName in self._edgeNames.keys():
-            checkEdge = self.getEdge(edgeName)
+            try:
+                checkEdge = self.getEdge(edgeName)
+            except ValueError:
+                return False
             if Edge.isEqual(checkEdge):
                 return True
         return False
