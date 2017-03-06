@@ -49,6 +49,18 @@ class TestTracker(unittest.TestCase):
         edge = self.tracker.getEdge('Edge0')
         self.assertEqual(edge, face0.Edges[0])
 
+    def test_getEdgeInvalidNameError(self):
+        self.assertRaises(KeyError, self.tracker.getEdge, 'Edge0')
+
+    def test_getEdgeNoTwoFacesError(self):
+        face0 = self.maker.OCCFace()
+        face1 = self.maker.OCCFace()
+        self.tracker._edgeNames = {'Edge0':['Face0', 'Face1']}
+        self.tracker._faceNames = {'Face0':{'faceShape':face0},
+                                   'Face1':{'faceShape':face1}}
+
+        self.assertRaises(ValueError, self.tracker.getEdge, 'Edge0')
+
     def test_updateEdgeWithNonSharedFace(self):
         face = self.maker.OCCFace()
         edge = self.maker.OCCEdge()
