@@ -85,6 +85,31 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
 
+    def test_checkEdges(self):
+        edgeNames = {'Edge0':['Face0', 'Face1']}
+        self.tracker._edgeNames = edgeNames.copy()
+        self.tracker._faceNames = {'Face0':{'openEdges':0},
+                                   'Face1':{'openEdges':0}}
+        self.tracker._checkEdges()
+        self.assertEqual(self.tracker._edgeNames, edgeNames)
+
+    def test_checkEdgesSomeRemoved(self):
+        self.tracker._edgeNames = {'Edge0':['Face0', 'Face1'],
+                                   'Edge1':['Face2', 'Face3'],
+                                   'Edge2':['Face2', 'Face4'],
+                                   'Edge3':['Face1', 'Face3']}
+        self.tracker._faceNames = {'Face0':{'openEdges':1},
+                                   'Face1':{'openEdges':0},
+                                   'Face2':{'openEdges':0},
+                                   'Face3':{'openEdges':0},
+                                   'Face4':{'openEdges':1}}
+        self.tracker._checkEdges()
+        self.assertEqual(self.tracker._edgeNames,
+                {'Edge0':None,
+                 'Edge1':['Face2', 'Face3'],
+                 'Edge2':None,
+                 'Edge3':['Face1', 'Face3']})
+
     def test_addFace(self):
         mock_face = self.maker.OCCFace()
         check_name = 'Face0'
@@ -175,17 +200,17 @@ class TestTracker(unittest.TestCase):
 
         self.assertRaises(ValueError, self.tracker.addFace, mock_face2)
 
-    def test_ModifyFace(self):
+    def test_modifyFace(self):
         mock_face0 = self.maker.OCCFace()
         mock_face1 = self.maker.OCCFace()
         mock_face2a = self.maker.OCCFace()
         mock_face2b = self.maker.OCCFace()
-        check_dict  = {'Face0':{'faceIndex':0,
-                                'edgeNames':['Edge{}'.format(i) for i in range(4)]},
-                       'Face1':{'faceIndex':1,
-                                'edgeNames':['Edge{}'.format(i) for i in [0,4,5,6]]},
-                       'Face2':{'faceIndex':2,
-                                'edgeNames':['Edge{}'.format(i) for i in [4,7,8,9]]}}
+        check_dict  = {'Face0':{'faceShape':mock_face0,
+                                'openEdges':3},
+                       'Face1':{'faceShape':mock_face1,
+                                'openEdges':2},
+                       'Face2':{'faceShape':mock_face2b,
+                                'openEdges':3}}
 
         mock_face1.Edges[0].value = mock_face0.Edges[0].value
         mock_face2a.Edges[0].value = mock_face0.Edges[1].value

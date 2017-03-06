@@ -17,7 +17,7 @@ class TopoEdgeAndFaceTracker(object):
         for edgeName in self._edgeNames.keys():
             try:
                 checkEdge = self.getEdge(edgeName)
-            except ValueError:
+            except KeyError:
                 return False
             if Edge.isEqual(checkEdge):
                 return True
@@ -88,6 +88,14 @@ class TopoEdgeAndFaceTracker(object):
                     return True
         return False
 
+    def _checkEdges(self):
+        '''Verify that all named Edges still have two faces each.'''
+        for edgeName,faces in self._edgeNames.items():
+            openEdges0 = self._faceNames[faces[0]]['openEdges']
+            openEdges1 = self._faceNames[faces[1]]['openEdges']
+            if openEdges0 != 0 or openEdges1 !=0:
+                self._edgeNames[edgeName] = None
+
     def addFace(self, OCCFace):
         '''Add an OpenCascade Face object to the tracked Faces list
 
@@ -118,11 +126,24 @@ class TopoEdgeAndFaceTracker(object):
             msg = '{} does not exist in the history'.format(oldFaceName)
             raise ValueError(msg)
 
-        numbEdges = len(newFaceShape.Edges)
-        self._faceNames[oldFaceName] = {'faceShape':newFaceShape,
-                                        'openEdges':numbEdges}
+        oldFace = self._faceNames.pop(oldFaceName)
+        oldFace['faceShape'] = newFaceShape
+        oldFace['openEdges'] = len(newFaceShape.Edges)
+
+        for faces in self._edgeNames.values():
+            if oldFaceName in faces:
+                if faces[0] == oldFaceName:
+                    which = faces[1]
+                else:
+                    which = faces[0]
+                self._faceNames[which]['openEdges'] += 1
+
         for Edge in newFaceShape.Edges:
-            self._updateEdge(Edge, oldFaceName)
+            match = self._updateEdge(Edge, oldFaceName)
+            if match == True:
+                oldFace['openEdges'] -= 1
+        self._faceNames[oldFaceName] = oldFace
+        self._checkEdges()
 
 class TopoNamer(object):
 
