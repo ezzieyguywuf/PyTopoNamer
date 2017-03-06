@@ -112,16 +112,12 @@ class TopoEdgeAndFaceTracker(object):
         if not oldFaceName in self._faceNames.keys():
             msg = '{} does not exist in the history'.format(oldFaceName)
             raise ValueError(msg)
-        faceData = self._faceNames[oldFaceName]
-        index = faceData['faceIndex']
 
-        self._faces[index] = newFaceShape
-        for i, edgeName in enumerate(faceData['edgeNames']):
-            newEdge = newFaceShape.Edges[i]
-            self._replaceEdge(edgeName, newEdge)
-
-        edgeNames = self._addEdges(newFaceShape.Edges, oldFaceName)
-        self._faceNames[oldFaceName]['edgeNames'] = edgeNames
+        numbEdges = len(newFaceShape.Edges)
+        self._faceNames[oldFaceName] = {'faceShape':newFaceShape,
+                                        'openEdges':numbEdges}
+        for Edge in newFaceShape.Edges:
+            self._updateEdge(Edge, oldFaceName)
 
 class TopoNamer(object):
 

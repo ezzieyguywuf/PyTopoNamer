@@ -50,21 +50,15 @@ class TestTracker(unittest.TestCase):
 
     def test_updateEdgeWithSharedFace(self):
         face0 = self.maker.OCCFace()
-        face1 = self.maker.OCCFace()
-        face1.Edges[0] = face0.Edges[0]
         open_faces = {'Face0':{'faceShape':face0,
-                               'openEdges':4},
-                      'Face1':{'faceShape':face1,
                                'openEdges':4}}
         edges = {'Edge0':['Face0', 'Face1']}
 
         self.tracker._faceNames = open_faces.copy()
 
-        self.tracker._updateEdge(face0.Edges[0], 'Face0')
+        self.tracker._updateEdge(face0.Edges[0], 'Face1')
 
-        for faceName in open_faces.keys():
-            open_faces[faceName]['openEdges'] = 3
-
+        open_faces['Face0']['openEdges'] = 3
         self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
 
