@@ -38,38 +38,15 @@ class TestTracker(unittest.TestCase):
 
         self.assertEqual(self.tracker._edgeNames, edges)
 
-    def test_updateFaceStillOpen(self):
-        face = self.maker.OCCFace()
-        open_faces = {'Face0':{'faceShape':face,
-                               'openEdges':4}}
-        self.tracker._openFaceNames = open_faces.copy()
-        self.tracker._updateFace('Face0')
-
-        open_faces['Face0']['openedges'] = 3
-        self.assertEqual(self.tracker._openFaceNames, open_faces)
-
-    def test_updateFaceClosed(self):
-        face = self.maker.OCCFace()
-        open_faces = {'Face0':{'faceShape':face,
-                               'openEdges':1}}
-
-        self.tracker._openFaceNames = open_faces.copy()
-        self.tracker._updateFace('Face0')
-
-        open_faces = {'Face0':{'faceShape':face,
-                               'openEdges':3}}
-        self.assertEqual(self.tracker._openFaceNames, {})
-        self.assertEqual(self.tracker._closedFaceNames, {'Face0':face})
-
     def test_updateEdgeWithNonSharedFace(self):
         face = self.maker.OCCFace()
         edge = self.maker.OCCEdge()
         open_faces = {'Face0':{'faceShape':face,
                                'openEdges':4}}
-        self.tracker._openFaceNames = open_faces
+        self.tracker._faceNames = open_faces.copy()
 
         self.tracker._updateEdge(edge, 'Face0')
-        self.assertEqual(self.tracker._openFaceNames, open_faces)
+        self.assertEqual(self.tracker._faceNames, open_faces)
 
     def test_updateEdgeWithSharedFace(self):
         face0 = self.maker.OCCFace()
@@ -81,14 +58,14 @@ class TestTracker(unittest.TestCase):
                                'openEdges':4}}
         edges = {'Edge0':['Face0', 'Face1']}
 
-        self.tracker._openFaceNames = open_faces.copy()
+        self.tracker._faceNames = open_faces.copy()
 
         self.tracker._updateEdge(face0.Edges[0], 'Face0')
 
         for faceName in open_faces.keys():
             open_faces[faceName]['openEdges'] = 3
 
-        self.assertEqual(self.tracker._openFaceNames, open_faces)
+        self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
 
     def test_addFace(self):
@@ -100,7 +77,7 @@ class TestTracker(unittest.TestCase):
         facename = self.tracker.addFace(mock_face)
 
         self.assertEqual(facename, check_name)
-        self.assertEqual(self.tracker._openFaceNames, check_dict)
+        self.assertEqual(self.tracker._faceNames, check_dict)
 
     def test_addSameFaceError(self):
         mock_faces = [self.maker.OCCFace() for i in range(6)]
@@ -122,7 +99,7 @@ class TestTracker(unittest.TestCase):
         name0 = self.tracker.addFace(mock_face1)
         name1 = self.tracker.addFace(mock_face2)
 
-        self.assertEqual(self.tracker._openFaceNames, open_faces)
+        self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(name0, check_name0)
         self.assertEqual(name1, check_name1)
 
@@ -140,7 +117,7 @@ class TestTracker(unittest.TestCase):
         name1 = self.tracker.addFace(mock_face1)
         name2 = self.tracker.addFace(mock_face2)
 
-        self.assertEqual(self.tracker._openFaceNames, open_faces)
+        self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
 
     def test_addThreeFacesWithSeparateSharedEdges(self):
@@ -151,7 +128,7 @@ class TestTracker(unittest.TestCase):
         mock_face1.Edges[1].value = mock_face0.Edges[0].value
         mock_face2.Edges[2].value = mock_face0.Edges[1].value
 
-        open_faces  = {'Face0':{'faceShape':mock_face0,
+        face_names  = {'Face0':{'faceShape':mock_face0,
                                 'openEdges':2},
                        'Face1':{'faceShape':mock_face1,
                                 'openEdges':3},
@@ -164,7 +141,7 @@ class TestTracker(unittest.TestCase):
         name2 = self.tracker.addFace(mock_face1)
         name3 = self.tracker.addFace(mock_face2)
 
-        self.assertEqual(self.tracker._openFaceNames, open_faces)
+        self.assertEqual(self.tracker._faceNames, face_names)
         self.assertEqual(self.tracker._edgeNames, edges)
 
     def test_addThreeFacesWithSharedEdgeError(self):
