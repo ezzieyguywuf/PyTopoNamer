@@ -29,6 +29,8 @@ class TopoEdgeAndFaceTracker(object):
             for edge2 in face2.Edges:
                 if edge1.isEqual(edge2):
                     return edge1
+        msg = 'This edgeName is invalid - no two Faces share it'
+        raise ValueError(msg)
 
     def _makeName(self, base, sub=False):
         if sub == False:
