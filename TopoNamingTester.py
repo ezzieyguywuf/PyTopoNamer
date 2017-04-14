@@ -16,6 +16,20 @@ class TestTrackedFace(unittest.TestCase):
         self.assertEqual('Face000', trackedFace._name)
         self.assertEqual([0,1,2,3], trackedFace._unsharedEdges)
 
+    def test_isSharedEdgeTrue(self):
+        mock_face0 = self.maker.OCCFace()
+        trackedFace = TrackedFace(mock_face0, 'Face000')
+
+        isShared = trackedFace.isEdgeShared(mock_face0.Edges[0])
+        self.assertTrue(isShared)
+
+    def test_isSharedEdgeFalse(self):
+        mock_face0 = self.maker.OCCFace()
+        mock_edge0 = self.maker.OCCEdge()
+        trackedFace = TrackedFace(mock_face0, 'Face000')
+
+        isShared = trackedFace.isEdgeShared(mock_edge0)
+        self.assertFalse(isShared)
 
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''

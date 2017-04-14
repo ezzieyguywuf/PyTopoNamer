@@ -8,3 +8,9 @@ class TrackedFace(object):
         self._occFace = occFace
         self._unsharedEdges = list(range(len(occFace.Edges)))
         self._name = name
+
+    def isEdgeShared(self, occEdge):
+        for Edge in self._occFace.Edges:
+            if Edge.isEqual(occEdge):
+                return True
+        return False
