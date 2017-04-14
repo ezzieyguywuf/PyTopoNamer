@@ -2,6 +2,19 @@ import unittest
 from unittest import mock
 from TopoNamer import TopoNamer, TopoEdgeAndFaceTracker
 from TestingHelpers import MockObjectMaker
+from TrackedFace import TrackedFace
+
+class TestTrackedFace(unittest.TestCase):
+    def setUp(self):
+        self.maker = MockObjectMaker()
+
+    def test_createNewTrackedFace(self):
+        mock_face0 = self.maker.OCCFace()
+        trackedFace = TrackedFace(mock_face0, 'Face000')
+
+        self.assertEqual(mock_face0, trackedFace._occFace)
+        self.assertEqual('Face000', trackedFace._name)
+        self.assertEqual([0,1,2,3], trackedFace._unsharedEdges)
 
 
 class TestTracker(unittest.TestCase):
@@ -203,12 +216,15 @@ class TestTracker(unittest.TestCase):
         mock_face1 = self.maker.OCCFace()
         mock_face2 = self.maker.OCCFace()
 
-        sharedEdgeValue = mock_face0.Edges[0].value
-        mock_face1.Edges[2].value = sharedEdgeValue
-        mock_face2.Edges[3].value = sharedEdgeValue
+        mock_face1.Edges[2] = mock_face0.Edges[0]
+        mock_face2.Edges[3] = mock_face0.Edges[0]
 
         index1 = self.tracker.addFace(mock_face0)
         index2 = self.tracker.addFace(mock_face1)
+        import pprint
+        pprint.pprint(self.tracker._faceNames)
+        pprint.pprint(self.tracker._edgeNames)
+        import pdb; pdb.set_trace()
 
         self.assertRaises(ValueError, self.tracker.addFace, mock_face2)
 

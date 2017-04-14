@@ -90,6 +90,8 @@ class TopoEdgeAndFaceTracker(object):
                     if Edge1.isEqual(Edge2):
                         toBlank.append(i)
                         toBlank2.append(j)
+                        if self._isNamedEdge(Edge1):
+                            raise ValueError('Cannot have more than two Faces share a single Edge')
                         self._addEdge(newFaceName, faceName2)
                 orig = self._faceNames[faceName2]['openEdgeIndices']
                 newVals = [value for i,value in enumerate(orig) if i not in toBlank2]
