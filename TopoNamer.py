@@ -25,7 +25,7 @@ class TopoEdgeAndFaceTracker(object):
         return False
 
     def getEdge(self, edgeName):
-        face1, face2 = self._edgeNames[edgeName]
+        face1, face2 = self._edgeNames[edgeName]['faceNames']
         face1 = self._faceNames[face1]['faceShape']
         face2 = self._faceNames[face2]['faceShape']
 
@@ -47,6 +47,7 @@ class TopoEdgeAndFaceTracker(object):
             else:
                 msg = 'Must be either \'Face\' or \'Edge\''
                 raise ValueError(msg)
+            name = '{}{:03d}'.format(base, index)
         else:
             cur_letter = base[-1]
             if cur_letter.isdigit():
@@ -57,7 +58,7 @@ class TopoEdgeAndFaceTracker(object):
             else:
                 base = base[:-1]
                 index = chr(ord(cur_letter) + 1)
-        name = '{}{:03d}'.format(base, index)
+            name = '{}{}'.format(base, index)
         return name
 
     def _addEdge(self, faceName1, faceName2):
@@ -67,27 +68,35 @@ class TopoEdgeAndFaceTracker(object):
         faceNames = [faceName1, faceName2]
         edgeName = self._makeName('Edge')
         faceNames.sort()
-        self._edgeNames[edgeName] = faceNames
+        self._edgeNames[edgeName] = {'faceNames':faceNames,
+                                     'valid':True}
 
-    def _updateEdge(self, Edge1, faceName1):
-        '''Check if `Edge1` is present in any 'open' Face.
+    def _checkForNewEdges(self, newOCCFace, newFaceName):
+        '''For a newly added face, checks each Edge to see if a new namedEdge has been
+        created
 
-        If it is, returns True and decrements the appropriate `openfaces` value'''
-        for faceName2, data in self._faceNames.items():
-            openEdges = data['openEdges']
-            if openEdges == 0:
-                continue
-            face = data['faceShape']
-            for Edge2 in face.Edges:
-                if Edge1.isEqual(Edge2):
-                    check =  self._isNamedEdge(Edge1)
-                    if check == True:
-                        msg = 'Cannot have more than two Faces share any given Edge'
-                        raise ValueError(msg)
-                    self._faceNames[faceName2]['openEdges'] -= 1
-                    self._addEdge(faceName1, faceName2)
-                    return True
-        return False
+        A namedEdge is created when two faces have a common Edge.
+        '''
+        edgeIndices = list(range(len(newOCCFace.Edges)))
+        toBlank = []
+        # for each Edge in the Face which is being added
+        for i, Edge1 in enumerate(newOCCFace.Edges):
+            # Check each Face that is currently stored
+            for faceName2, faceData in self._faceNames.items():
+                # check only the 'open' Edges
+                toBlank2 = []
+                for j in faceData['openEdgeIndices']:
+                    Edge2 = faceData['faceShape'].Edges[j]
+                    if Edge1.isEqual(Edge2):
+                        toBlank.append(i)
+                        toBlank2.append(j)
+                        self._addEdge(newFaceName, faceName2)
+                orig = self._faceNames[faceName2]['openEdgeIndices']
+                newVals = [value for i,value in enumerate(orig) if i not in toBlank2]
+                self._faceNames[faceName2]['openEdgeIndices'] = newVals
+        edgeIndices.pop(i)
+        edgeIndices = [value for i,value in enumerate(edgeIndices) if i not in toBlank]
+        return edgeIndices
 
     def addFace(self, OCCFace):
         '''Add an OpenCascade Face object to the tracked Faces list
@@ -102,15 +111,10 @@ class TopoEdgeAndFaceTracker(object):
                 msg = 'Cannot add the same face more than once.'
                 raise ValueError(msg)
         faceName = self._makeName('Face')
-        numbEdges = len(OCCFace.Edges)
-
-        for Edge in OCCFace.Edges:
-            match = self._updateEdge(Edge, faceName)
-            if match == True:
-                numbEdges -= 1
+        edgeIndices = self._checkForNewEdges(OCCFace, faceName)
 
         self._faceNames[faceName] = {'faceShape':OCCFace,
-                                     'openEdges':numbEdges}
+                                     'openEdgeIndices':edgeIndices}
 
         return faceName
 
@@ -119,15 +123,18 @@ class TopoEdgeAndFaceTracker(object):
             msg = '{} does not exist in the history'.format(oldFaceName)
             raise ValueError(msg)
 
+        # first, remove the old face from our dictionary, so we're not iterating over it
         oldFace = self._faceNames.pop(oldFaceName)
-        for edgeName, faces in self._edgeNames.items():
-            if oldFaceName in faces:
-                index = self._edgeNames[edgeName].index(oldFaceName)
-                self._edgeNames[edgeName].pop(index)
+
+        # replace the old Face data with the new face Data. Don't add it to our dictionary
+        # yet
         oldFace['faceShape'] = newFaceShape
         oldFace['openEdges'] = len(newFaceShape.Edges)
 
-        for faces in self._edgeNames.values():
+        # since we've removed the face, we have to remove all traces of it. This means:
+        # 1) if it was part of a self._edgeNames pair, we must remove it from there
+        # 2) since we're removing it, we must increment
+        for edgeName, faces in self._edgeNames.items():
             if oldFaceName in faces:
                 if faces[0] == oldFaceName:
                     which = faces[1]

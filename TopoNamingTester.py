@@ -34,7 +34,8 @@ class TestTracker(unittest.TestCase):
 
     def test_addEdge(self):
         self.tracker._addEdge('Face000', 'Face001')
-        edges = {'Edge000':['Face000', 'Face001']}
+        edges = {'Edge000':{'faceNames':['Face000', 'Face001'],
+                            'valid':True}}
 
         self.assertEqual(self.tracker._edgeNames, edges)
 
@@ -42,7 +43,8 @@ class TestTracker(unittest.TestCase):
         face0 = self.maker.OCCFace()
         face1 = self.maker.OCCFace()
         face1.Edges[0] = face0.Edges[0]
-        self.tracker._edgeNames = {'Edge000':['Face000', 'Face001']}
+        self.tracker._edgeNames = {'Edge000':{'faceNames':['Face000', 'Face001'],
+                                              'valid':True}}
         self.tracker._faceNames = {'Face000':{'faceShape':face0},
                                    'Face001':{'faceShape':face1}}
 
@@ -55,33 +57,38 @@ class TestTracker(unittest.TestCase):
     def test_getEdgeNoTwoFacesError(self):
         face0 = self.maker.OCCFace()
         face1 = self.maker.OCCFace()
-        self.tracker._edgeNames = {'Edge000':['Face000', 'Face001']}
+        self.tracker._edgeNames = {'Edge000':{'faceNames':['Face000', 'Face001'],
+                                              'valid':True}}
         self.tracker._faceNames = {'Face000':{'faceShape':face0},
                                    'Face001':{'faceShape':face1}}
 
         self.assertRaises(ValueError, self.tracker.getEdge, 'Edge000')
 
-    def test_updateEdgeWithNonSharedFace(self):
-        face = self.maker.OCCFace()
-        edge = self.maker.OCCEdge()
-        open_faces = {'Face000':{'faceShape':face,
-                               'openEdges':4}}
-        self.tracker._faceNames = open_faces.copy()
-
-        self.tracker._updateEdge(edge, 'Face000')
-        self.assertEqual(self.tracker._faceNames, open_faces)
-
-    def test_updateEdgeWithSharedFace(self):
+    def test_checkForNewEdgesWithNoSharedEdges(self):
         face0 = self.maker.OCCFace()
+        face1 = self.maker.OCCFace()
+        edge = self.maker.OCCEdge()
         open_faces = {'Face000':{'faceShape':face0,
-                               'openEdges':4}}
-        edges = {'Edge000':['Face000', 'Face001']}
-
+                                 'openEdgeIndices':list(range(4))}}
         self.tracker._faceNames = open_faces.copy()
 
-        self.tracker._updateEdge(face0.Edges[0], 'Face001')
+        self.tracker._checkForNewEdges(face1, 'Face001')
+        self.assertEqual(self.tracker._faceNames, open_faces)
+        self.assertEqual(self.tracker._edgeNames, {})
 
-        open_faces['Face000']['openEdges'] = 3
+    def test_checkForNewEdgesWithOneSharedEdge(self):
+        face0 = self.maker.OCCFace()
+        face1 = self.maker.OCCFace()
+        face1.Edges[0] = face0.Edges[0]
+        open_faces = {'Face000':{'faceShape':face0,
+                                'openEdgeIndices':list(range(4))}}
+        edges = {'Edge000':{'faceNames':['Face000', 'Face001'],
+                            'valid':True}}
+
+        self.tracker._faceNames = open_faces.copy()
+        self.tracker._checkForNewEdges(face1, 'Face001')
+
+        open_faces['Face000']['openEdgeIndices'] = [1,2,3]
         self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
 
@@ -114,7 +121,7 @@ class TestTracker(unittest.TestCase):
         mock_face = self.maker.OCCFace()
         check_name = 'Face000'
         check_dict = {check_name:{'faceShape':mock_face,
-                                  'openEdges':4}}
+                                  'openEdgeIndices':list(range(4))}}
 
         facename = self.tracker.addFace(mock_face)
 
@@ -122,7 +129,7 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(self.tracker._faceNames, check_dict)
 
     def test_addSameFaceError(self):
-        mock_faces = [self.maker.OCCFace() for i in range(6)]
+        mock_faces = [self.maker.OCCFace() for i in list(range(6))]
         mock_faces[5].value = mock_faces[0].value
         for mock_face in mock_faces[:5]:
             self.tracker.addFace(mock_face)
@@ -134,9 +141,9 @@ class TestTracker(unittest.TestCase):
         check_name0 = 'Face000'
         check_name1 = 'Face001'
         open_faces  = {check_name0:{'faceShape':mock_face1,
-                                    'openEdges':4},
+                                    'openEdgeIndices':list(range(4))},
                        check_name1:{'faceShape':mock_face2,
-                                    'openEdges':4}}
+                                    'openEdgeIndices':list(range(4))}}
 
         name0 = self.tracker.addFace(mock_face1)
         name1 = self.tracker.addFace(mock_face2)
@@ -149,10 +156,11 @@ class TestTracker(unittest.TestCase):
         mock_face1 = self.maker.OCCFace()
         mock_face2 = self.maker.OCCFace()
         open_faces  = {'Face000':{'faceShape':mock_face1,
-                                'openEdges':3},
+                                  'openEdgeIndices':range(1,3)},
                        'Face001':{'faceShape':mock_face2,
-                                'openEdges':3}}
-        edges = {'Edge000': ['Face000', 'Face001']}
+                                  'openEdgeIndices':range(1,3)}}
+        edges = {'Edge000': {'faceNames':['Face000', 'Face001'],
+                            'valid':True}}
 
         mock_face2.Edges[0].value = mock_face1.Edges[0].value
 
@@ -171,13 +179,15 @@ class TestTracker(unittest.TestCase):
         mock_face2.Edges[2].value = mock_face0.Edges[1].value
 
         face_names  = {'Face000':{'faceShape':mock_face0,
-                                'openEdges':2},
+                                'openEdgeIndices':range(2,2)},
                        'Face001':{'faceShape':mock_face1,
-                                'openEdges':3},
+                                'openEdgeIndices':range(1,3)},
                        'Face002':{'faceShape':mock_face2,
-                                'openEdges':3}}
-        edges = {'Edge000':['Face000', 'Face001'],
-                 'Edge001':['Face000', 'Face002']}
+                                'openEdgeIndices':range(1,3)}}
+        edges = {'Edge000':{'faceNames':['Face000', 'Face001'],
+                           'valid':True},
+                'Edge001':{'faceNames':['Face000', 'Face002'],
+                           'valid':True}}
 
         name1 = self.tracker.addFace(mock_face0)
         name2 = self.tracker.addFace(mock_face1)
@@ -206,11 +216,11 @@ class TestTracker(unittest.TestCase):
         mock_face2a = self.maker.OCCFace()
         mock_face2b = self.maker.OCCFace()
         check_dict  = {'Face000':{'faceShape':mock_face0,
-                                'openEdges':3},
+                                'openEdgeIndices':range(1,3)},
                        'Face001':{'faceShape':mock_face1,
-                                'openEdges':2},
+                                'openEdgeIndices':range(2,2)},
                        'Face002':{'faceShape':mock_face2b,
-                                'openEdges':3}}
+                                'openEdgeIndices':range(1,3)}}
 
         mock_face1.Edges[0].value = mock_face0.Edges[0].value
         mock_face2a.Edges[0].value = mock_face0.Edges[1].value
@@ -235,9 +245,9 @@ class TestTracker(unittest.TestCase):
         mock_face0b = self.maker.OCCFace()
         mock_face1 = self.maker.OCCFace()
         check_dict  = {'Face000':{'faceShape':mock_face0b,
-                                'openEdges':4},
+                                'openEdgeIndices':list(range(4))},
                        'Face001':{'faceShape':mock_face1,
-                                'openEdges':3}}
+                                'openEdgeIndices':range(1,3)}}
 
         # really most of these Edges will change, but for this test that is not relevant.
         mock_face0b.Edges = mock_face0a.Edges
@@ -258,8 +268,10 @@ class TestNamer(unittest.TestCase):
         '''Retrieve an Edge based on the two face names'''
         check = [faceName1, faceName2]
         check.sort()
-        for edgeName, faces in self.myNamer._tracker._edgeNames.items():
+        for edgeName, data in self.myNamer._tracker._edgeNames.items():
+            faces = data['faceNames']
             if check == faces:
+                print('Returning edge numb {} between faces {}'.format(edgeName, faces))
                 return self.myNamer._tracker.getEdge(edgeName)
         msg = 'Edge not found between {}'.format(check)
         raise ValueError(msg)
@@ -283,15 +295,14 @@ class TestNamer(unittest.TestCase):
     def test_chamferBoxEdge(self):
         mock_box = self.maker.BoxFeature()
         self.myNamer.addShape(mock_box)
+        import pprint
+        print("----original edges----")
+        pprint.pprint(self.myNamer._tracker._edgeNames)
 
         chamfer_face = self.maker.OCCFace()
-        # the original box will have 4 modified faces, each with one new Edge. All will
-        # have a brand new Edge that is shared with the chamfer_face. They will also have
-        # 'new' edges which are shared with one of the original faces: essentially shorter
-        # versions of tehir existing edges, but 'new' in the sense that OpenCascade will
-        # create an all new edge.
-        newEdges = [self.maker.OCCEdge() for i in range(4)]
 
+        # the original box will have 4 modified faces, each with one new Edge. This new
+        # Edge will come from the chamfer_face
         new_faces = [chamfer_face]
         modified_faces = [['Face{:03d}'.format(i), self.maker.OCCFace()] for i in [0,2,3,4]]
 
@@ -324,11 +335,13 @@ class TestNamer(unittest.TestCase):
         self.myNamer.modifyShape(newFaces=new_faces, modifiedFaces=modified_faces)
         # import pdb; pdb.set_trace()
         realEdges = []
-        for edgeName, faces in self.myNamer._tracker._edgeNames.items():
+        for edgeName, data in self.myNamer._tracker._edgeNames.items():
+            faces = data['faceNames']
             if len(faces) == 2:
                 realEdges.append(edgeName)
-        import pdb; pdb.set_trace()
-        self.assertEqual(len(realEdges), 17)
+        print('------post modify edges-----')
+        pprint.pprint(self.myNamer._tracker._edgeNames)
+        self.assertEqual(len(realEdges), 15)
 
     def test_fuseCylinderAndBoxOfEqualHeight(self):
         # The cylinder will be taller than the box and will be centered vertically along
@@ -340,7 +353,6 @@ class TestNamer(unittest.TestCase):
         # edge values
         all_edges = [i.value for i in [self.myNamer._tracker.getEdge(j) for j in self.myNamer._tracker._edgeNames.keys()]]
         for faceName, data in self.myNamer._tracker._faceNames.items():
-            nOpen = data['openEdges']
             faceShape = data['faceShape']
             edgeVals = [i.value for i in faceShape.Edges]
         all_edges.sort()
@@ -352,7 +364,7 @@ class TestNamer(unittest.TestCase):
                     # lateral face has six edges. One each it shares with the top and
                     # bottom faces of the cylinder. Then, it has a shared Edge with each
                     # of the Front, Top, Bottom, and Left faces on the box.
-                    self.maker.OCCFace(edges=[self.maker.OCCEdge() for i in range(6)])
+                    self.maker.OCCFace(edges=[self.maker.OCCEdge() for i in list(range(6))])
                     ] 
         # Edges 0-3 are the shared Edges with the Box. Edges 4 and 5 are shared with the
         # Top and Bottom face of the cylinder, respectively.

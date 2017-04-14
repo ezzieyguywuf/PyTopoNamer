@@ -74,21 +74,21 @@ class MockObjectMaker(object):
 
         faces = [self.OCCFace() for i in range(6)]
 
-        faces[0].Edges[0] = faces[2].Edges[0]
-        faces[0].Edges[1] = faces[3].Edges[0]
-        faces[0].Edges[2] = faces[4].Edges[0]
-        faces[0].Edges[3] = faces[5].Edges[0]
+        faces[2].Edges[0] = faces[0].Edges[0]
+        faces[3].Edges[0] = faces[0].Edges[1]
+        faces[4].Edges[0] = faces[0].Edges[2]
+        faces[5].Edges[0] = faces[0].Edges[3]
 
-        faces[1].Edges[0] = faces[2].Edges[1]
-        faces[1].Edges[1] = faces[3].Edges[1]
-        faces[1].Edges[2] = faces[4].Edges[1]
-        faces[1].Edges[3] = faces[5].Edges[1]
+        faces[2].Edges[1] = faces[1].Edges[0]
+        faces[3].Edges[1] = faces[1].Edges[1]
+        faces[4].Edges[1] = faces[1].Edges[2]
+        faces[5].Edges[1] = faces[1].Edges[3]
 
-        faces[2].Edges[2] = faces[4].Edges[2]
-        faces[2].Edges[3] = faces[5].Edges[2]
+        faces[4].Edges[2] = faces[2].Edges[2]
+        faces[5].Edges[2] = faces[2].Edges[3]
 
-        faces[3].Edges[2] = faces[4].Edges[3]
-        faces[3].Edges[3] = faces[5].Edges[3]
+        faces[4].Edges[3] = faces[3].Edges[2]
+        faces[5].Edges[3] = faces[3].Edges[3]
 
         mock_feature.Shape.Faces = faces
         return mock_feature
