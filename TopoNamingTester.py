@@ -35,7 +35,7 @@ class TestTrackedFace(unittest.TestCase):
         mock_face0 = self.maker.OCCFace()
         trackedFace = TrackedFace(mock_face0, 'Face000')
 
-        trackedFace.updateUnsharedEdges(mock_face0.Edges[0])
+        trackedFace.updateUnsharedEdge(mock_face0.Edges[0])
         self.assertEqual(trackedFace._unsharedEdges, [1,2,3])
 
 class TestTracker(unittest.TestCase):
