@@ -64,7 +64,7 @@ class TestTracker(unittest.TestCase):
 
         self.assertRaises(ValueError, self.tracker.getEdge, 'Edge000')
 
-    def test_checkForNewEdgesWithNoSharedEdges(self):
+    def test_checkForNewEdgesWithNoSharedEdge(self):
         face0 = self.maker.OCCFace()
         face1 = self.maker.OCCFace()
         edge = self.maker.OCCEdge()
@@ -72,9 +72,10 @@ class TestTracker(unittest.TestCase):
                                  'openEdgeIndices':list(range(4))}}
         self.tracker._faceNames = open_faces.copy()
 
-        self.tracker._checkForNewEdges(face1, 'Face001')
+        indices = self.tracker._checkForNewEdges(face1, 'Face001')
         self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, {})
+        self.assertEqual(indices, [0,1,2,3])
 
     def test_checkForNewEdgesWithOneSharedEdge(self):
         face0 = self.maker.OCCFace()
@@ -86,11 +87,12 @@ class TestTracker(unittest.TestCase):
                             'valid':True}}
 
         self.tracker._faceNames = open_faces.copy()
-        self.tracker._checkForNewEdges(face1, 'Face001')
+        indices = self.tracker._checkForNewEdges(face1, 'Face001')
 
         open_faces['Face000']['openEdgeIndices'] = [1,2,3]
         self.assertEqual(self.tracker._faceNames, open_faces)
         self.assertEqual(self.tracker._edgeNames, edges)
+        self.assertEqual(indices, [1,2,3])
 
     # def test_checkEdges(self):
         # edgeNames = {'Edge000':['Face000', 'Face001']}
