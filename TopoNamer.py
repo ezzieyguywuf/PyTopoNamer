@@ -94,7 +94,6 @@ class TopoEdgeAndFaceTracker(object):
                 orig = self._faceNames[faceName2]['openEdgeIndices']
                 newVals = [value for i,value in enumerate(orig) if i not in toBlank2]
                 self._faceNames[faceName2]['openEdgeIndices'] = newVals
-        edgeIndices.pop(i)
         edgeIndices = [value for i,value in enumerate(edgeIndices) if i not in toBlank]
         return edgeIndices
 
