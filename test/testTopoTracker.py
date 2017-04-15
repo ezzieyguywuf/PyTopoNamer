@@ -1,6 +1,7 @@
 import unittest
 from TopoNamer.TopoTracker import TopoTracker
 from test.TestingHelpers import MockObjectMaker
+import copy
 
 class TestTracker(unittest.TestCase):
     def setUp(self):
@@ -59,3 +60,16 @@ class TestTracker(unittest.TestCase):
         self.assertTrue(len(self.tracker._faceTrackers) == 2)
         self.assertEqual(len(self.tracker._edgeTrackers), 7)
         self.assertTrue(self.tracker._edgeTrackers[0].isValid())
+
+    def test_modifyFace_makeEdgeInvalid(self):
+        mock_face0 = self.maker.OCCFace()
+        mock_face1a = self.maker.OCCFace()
+        mock_face1b = copy.deepcopy(mock_face1a)
+        mock_face1a.Edges[0] = mock_face0.Edges[0]
+        mock_face1b.Edges[1] = mock_face0.Edges[0]
+
+        self.tracker.addFace(mock_face0)
+        self.tracker.addFace(mock_face1a)
+        self.tracker.modifyFace(mock_face1a, mock_face1b)
+
+        self.assertFalse(self.tracker._edgeTrackers[0].isValid())
