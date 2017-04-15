@@ -34,6 +34,18 @@ class TestTrackedFace(unittest.TestCase):
 
         self.assertRaises(ValueError, self.trackedFace.updateUnsharedEdge, self.mock_face0.Edges[0])
 
+class TestTrackedEdge(unittest.TestCase):
+
+    """Tests the TrackedEdge object"""
+    def setUp(self):
+        self.maker = MockObjectMaker()
+        self.mock_Edge0 = self.maker.OCCEdge()
+        self.trackedEdge = TrackedEdge(self.mock_Edge0, 'Edge000')
+
+    def test_createNewTrackedEdge(self):
+        self.trackedEdge._name = 'Edge000'
+        self.trackedEdge._isValid = False
+
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
     def setUp(self):
