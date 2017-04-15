@@ -13,6 +13,10 @@ class TestTrackedEdge(unittest.TestCase):
         self.trackedFace = TrackedFace(mock_Face0, 'Face000')
         self.trackedEdge = TrackedEdge(self.mock_Edge0, 'Edge000')
 
+    def test_getOCCEdge(self):
+        fetchedEdge = self.trackedEdge.getOCCEdge()
+        self.assertTrue(fetchedEdge.isEqual(self.mock_Edge0))
+
     def test_createNewTrackedEdge(self):
         self.trackedEdge._name = 'Edge000'
         self.trackedEdge._valid = False
