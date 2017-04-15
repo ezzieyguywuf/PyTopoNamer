@@ -49,11 +49,17 @@ class TestTrackedEdge(unittest.TestCase):
         self.trackedEdge._name = 'Edge000'
         self.trackedEdge._valid = False
 
-    def test_addFace(self):
+    def test_addFace_noSharedEdge(self):
         retval = self.trackedEdge.addFace(self.trackedFace)
 
         self.assertFalse(retval)
         self.assertEqual(self.trackedEdge._faceNames, [])
+
+    def test_addFace_yesSharedEdge(self):
+        retval = self.trackedEdge.addFace(self.trackedFace)
+
+        self.assertFalse(True)
+        self.assertEqual(self.trackedEdge._faceNames, ['Face000'])
 
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
