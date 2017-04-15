@@ -9,6 +9,12 @@ class TrackedFace(object):
         self._unsharedEdges = list(range(len(occFace.Edges)))
         self._name = name
 
+    def getOCCFace(self):
+        return self._occFace
+
+    def getName(self):
+        return self._name
+
     def _unshareEdge(self, index):
         try:
             toPop = self._unsharedEdges.index(index)
