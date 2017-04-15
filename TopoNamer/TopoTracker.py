@@ -61,6 +61,11 @@ class TopoTracker(object):
 
     def addFace(self, OCCFace):
         '''Adds OCCFace to the list of tracked Faces'''
+        for face in self._faceTrackers:
+            occFace = face.getOCCFace()
+            if occFace.isEqual(OCCFace):
+                msg = 'A given OpenCascade Face may only be tracked once.'
+                raise ValueError(msg)
         name = self._makeName('Face')
         trackedFace = TrackedFace(OCCFace, name)
         self._faceTrackers.append(trackedFace)
