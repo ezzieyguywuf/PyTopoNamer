@@ -44,3 +44,8 @@ class TrackedEdge(object):
                 self._valid = True
             return True
         return False
+
+    def delFace(self, faceName):
+        index = self._faceNames.index(faceName)
+        self._faceNames.pop(index)
+        self._valid = False

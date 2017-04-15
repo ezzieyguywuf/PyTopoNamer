@@ -27,14 +27,14 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertFalse(retval)
         self.assertEqual(self.trackedEdge._faceNames, [])
 
-    def test_addFace_yesSharedEdge(self):
+    def test_addFace_yesSharedEdgeFirstFace(self):
         self.trackedFace._occFace.Edges[0] = self.mock_Edge0
         retval = self.trackedEdge.addFace(self.trackedFace)
 
         self.assertTrue(retval)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000'])
 
-    def test_addFace_twoFacesWithSharedEdges(self):
+    def test_addFace_yesSharedEdgeSecondFace(self):
         self.trackedFace._occFace.Edges[0] = self.mock_Edge0
         mock_face1 = self.maker.OCCFace()
         mock_face1.Edges[1] = self.mock_Edge0
@@ -78,3 +78,9 @@ class TestTrackedEdge(unittest.TestCase):
         self.trackedEdge.addFace(trackedFace1)
 
         self.assertTrue(self.trackedEdge.isValid())
+
+    def test_delFace(self):
+        self.trackedEdge.addFace(self.trackedFace)
+        self.trackedEdge.delFace(self.trackedFace.getName())
+
+        self.assertTrue(len(self.trackedEdge._faceNames) == 0)
