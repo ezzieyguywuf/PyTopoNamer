@@ -15,12 +15,12 @@ class TopoTracker(object):
         '''Checks if OCCEdge is already being tracked.
         
         If it is, returns the index of the appropriate tracker in self._edgeTrackers.
-        Otherwise, returns false.'''
+        Otherwise, returns None.'''
         for i, edgeTracker in enumerate(self._edgeTrackers):
             trackedOCCEdge = edgeTracker.getOCCEdge()
             if trackedOCCEdge.isEqual(OCCEdge):
                 return i
-        return False
+        return None
 
     def getEdge(self, edgeName):
         face1, face2 = self._edgeNames[edgeName]['faceNames']
@@ -72,9 +72,10 @@ class TopoTracker(object):
 
         for OCCEdge in OCCFace.Edges:
             check = self._isTrackedEdge(OCCEdge)
-            if check:
+            if not check is None:
                 self._edgeTrackers[check].addFace(trackedFace)
             else:
                 edgeName = self._makeName('Edge')
                 trackedEdge = TrackedEdge(OCCEdge, edgeName)
+                trackedEdge.addFace(trackedFace)
                 self._edgeTrackers.append(trackedEdge)

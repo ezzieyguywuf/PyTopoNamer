@@ -57,4 +57,5 @@ class TestTracker(unittest.TestCase):
         self.tracker.addFace(mock_face1)
 
         self.assertTrue(len(self.tracker._faceTrackers) == 2)
-        self.assertTrue(len(self.tracker._edgeTrackers) == 1)
+        self.assertEqual(len(self.tracker._edgeTrackers), 7)
+        self.assertTrue(self.tracker._edgeTrackers[0].isValid())
