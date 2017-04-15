@@ -36,10 +36,11 @@ class TestTrackedEdge(unittest.TestCase):
         mock_face1.Edges[1] = self.mock_Edge0
         trackedFace1 = TrackedFace(mock_face1, 'Face001')
 
-        retval = self.trackedEdge.addFace(self.trackedFace)
-        retval = self.trackedEdge.addFace(trackedFace1)
+        retval0 = self.trackedEdge.addFace(self.trackedFace)
+        retval1 = self.trackedEdge.addFace(trackedFace1)
 
-        self.assertTrue(retval)
+        self.assertTrue(retval0)
+        self.assertTrue(retval1)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000', 'Face001'])
 
     def test_addFace_errorIfThirdFaceAdded(self):
@@ -62,3 +63,14 @@ class TestTrackedEdge(unittest.TestCase):
         self.trackedEdge.addFace(self.trackedFace)
 
         self.assertFalse(self.trackedEdge.isValid())
+
+    def test_isValid_true(self):
+        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
+        mock_face1 = self.maker.OCCFace()
+        mock_face1.Edges[1] = self.mock_Edge0
+        trackedFace1 = TrackedFace(mock_face1, 'Face001')
+
+        self.trackedEdge.addFace(self.trackedFace)
+        self.trackedEdge.addFace(trackedFace1)
+
+        self.assertTrue(self.trackedEdge.isValid())
