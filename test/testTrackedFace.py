@@ -40,3 +40,9 @@ class TestTrackedFace(unittest.TestCase):
 
         self.assertRaises(ValueError, self.trackedFace.updateUnsharedEdge, self.mock_face0.Edges[0])
 
+    def test_updateOCCFace(self):
+        mock_face1 = self.maker.OCCFace()
+
+        self.trackedFace.updateOCCFace(mock_face1)
+
+        self.assertEqual(self.trackedFace._unshareEdges, [0,1,2,3])
