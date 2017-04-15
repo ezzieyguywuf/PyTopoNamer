@@ -41,7 +41,8 @@ class TestTrackedEdge(unittest.TestCase):
     def setUp(self):
         self.maker = MockObjectMaker()
         self.mock_Edge0 = self.maker.OCCEdge()
-        self.mock_Face0 = self.maker.OCCFace()
+        mock_Face0 = self.maker.OCCFace()
+        self.trackedFace = TrackedFace(mock_Face0, 'Face000')
         self.trackedEdge = TrackedEdge(self.mock_Edge0, 'Edge000')
 
     def test_createNewTrackedEdge(self):
@@ -49,9 +50,9 @@ class TestTrackedEdge(unittest.TestCase):
         self.trackedEdge._valid = False
 
     def test_addFace(self):
-        retval = self.trackedEdge.addFace(self.mock_Face0)
+        retval = self.trackedEdge.addFace(self.trackedFace)
 
-        self.assertFalse(retVal)
+        self.assertFalse(retval)
         self.assertEqual(self.trackedEdge._faceNames, [])
 
 class TestTracker(unittest.TestCase):
