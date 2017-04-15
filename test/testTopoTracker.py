@@ -36,4 +36,4 @@ class TestTracker(unittest.TestCase):
         self.tracker.addFace(mock_face0)
         self.tracker.addFace(mock_face1)
 
-        self.assertTrue(len(self.tracker._trackedFaces) == 2)
+        self.assertTrue(len(self.tracker._faceTrackers) == 2)

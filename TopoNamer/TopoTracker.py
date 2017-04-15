@@ -61,3 +61,6 @@ class TopoTracker(object):
 
     def addFace(self, OCCFace):
         '''Adds OCCFace to the list of tracked Faces'''
+        name = self._makeName('Face')
+        trackedFace = TrackedFace(OCCFace, name)
+        self._faceTrackers.append(trackedFace)
