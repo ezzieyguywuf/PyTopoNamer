@@ -66,10 +66,22 @@ class TestTracker(unittest.TestCase):
         mock_face1a = self.maker.OCCFace()
         mock_face1b = copy.deepcopy(mock_face1a)
         mock_face1a.Edges[0] = mock_face0.Edges[0]
-        mock_face1b.Edges[1] = mock_face0.Edges[0]
 
         self.tracker.addFace(mock_face0)
         self.tracker.addFace(mock_face1a)
         self.tracker.modifyFace(mock_face1a, mock_face1b)
 
         self.assertFalse(self.tracker._edgeTrackers[0].isValid())
+
+    def test_modifyFace_edgeStillValid(self):
+        mock_face0 = self.maker.OCCFace()
+        mock_face1a = self.maker.OCCFace()
+        mock_face1b = copy.deepcopy(mock_face1a)
+        mock_face1a.Edges[0] = mock_face0.Edges[0]
+        mock_face1b.Edges[1] = mock_face0.Edges[0]
+
+        self.tracker.addFace(mock_face0)
+        self.tracker.addFace(mock_face1a)
+        self.tracker.modifyFace(mock_face1a, mock_face1b)
+
+        self.assertTrue(self.tracker._edgeTrackers[0].isValid())
