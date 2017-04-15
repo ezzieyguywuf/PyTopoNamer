@@ -58,3 +58,7 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertEqual(self.trackedEdge._faceNames, ['Face000', 'Face001'])
         self.assertRaises(ValueError, self.trackedEdge.addFace, trackedFace2)
 
+    def test_isValid_false(self):
+        self.trackedEdge.addFace(self.trackedFace)
+
+        self.assertFalse(self.trackedEdge.isValid())
