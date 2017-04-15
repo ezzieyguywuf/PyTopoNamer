@@ -70,17 +70,33 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertTrue(retval)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000'])
 
-    def test_addFace_twoFacesWithSeparateSharedEdges(self):
+    def test_addFace_twoFacesWithSharedEdges(self):
         self.trackedFace._occFace.Edges[0] = self.mock_Edge0
         mock_face1 = self.maker.OCCFace()
-        trackedFace1 = TrackedFace(mock_face1, 'Face001')
         mock_face1.Edges[1] = self.mock_Edge0
+        trackedFace1 = TrackedFace(mock_face1, 'Face001')
 
         retval = self.trackedEdge.addFace(self.trackedFace)
         retval = self.trackedEdge.addFace(trackedFace1)
 
         self.assertTrue(retval)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000', 'Face001'])
+
+    def test_addFace_errorIfThirdFaceAdded(self):
+        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
+        mock_face1 = self.maker.OCCFace()
+        mock_face1.Edges[1] = self.mock_Edge0
+        trackedFace1 = TrackedFace(mock_face1, 'Face001')
+        mock_face2 = self.maker.OCCFace()
+        mock_face2.Edges[2] = self.mock_Edge0
+        trackedFace2 = TrackedFace(mock_face2, 'Face002')
+
+        retval = self.trackedEdge.addFace(self.trackedFace)
+        retval = self.trackedEdge.addFace(trackedFace1)
+
+        self.assertTrue(retval)
+        self.assertEqual(self.trackedEdge._faceNames, ['Face000', 'Face001'])
+        self.assertRaises(ValueError, self.trackedEdge.addFace, trackedFace2)
 
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
