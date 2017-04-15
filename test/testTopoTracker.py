@@ -37,7 +37,9 @@ class TestTracker(unittest.TestCase):
         self.tracker.addFace(mock_face1)
 
         self.assertTrue(len(self.tracker._faceTrackers) == 2)
-        self.assertTrue(len(self.tracker._edgeTrackers) == 0)
+        self.assertEqual(len(self.tracker._edgeTrackers), 8)
+        for edgeTracker in self.tracker._edgeTrackers:
+            self.assertFalse(edgeTracker.isValid())
 
     def test_addSameFaceError(self):
         mock_face0 = self.maker.OCCFace()
