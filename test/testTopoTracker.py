@@ -37,6 +37,7 @@ class TestTracker(unittest.TestCase):
         self.tracker.addFace(mock_face1)
 
         self.assertTrue(len(self.tracker._faceTrackers) == 2)
+        self.assertTrue(len(self.tracker._edgeTrackers) == 0)
 
     def test_addSameFaceError(self):
         mock_face0 = self.maker.OCCFace()
@@ -44,3 +45,14 @@ class TestTracker(unittest.TestCase):
         self.tracker.addFace(mock_face0)
 
         self.assertRaises(ValueError, self.tracker.addFace, mock_face0)
+
+    def test_addFaceWithSharedEdge(self):
+        mock_face0 = self.maker.OCCFace()
+        mock_face1 = self.maker.OCCFace()
+        mock_face1.Edges[0] = mock_face0.Edges[0]
+
+        self.tracker.addFace(mock_face0)
+        self.tracker.addFace(mock_face1)
+
+        self.assertTrue(len(self.tracker._faceTrackers) == 2)
+        self.assertTrue(len(self.tracker._edgeTrackers) == 1)
