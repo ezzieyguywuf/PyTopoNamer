@@ -24,5 +24,3 @@ class TestTrackedFace(unittest.TestCase):
         mock_face1 = self.maker.OCCFace()
 
         self.trackedFace.updateOCCFace(mock_face1)
-
-        self.assertEqual(self.trackedFace._unsharedEdges, [0,1,2,3])

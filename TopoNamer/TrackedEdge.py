@@ -24,6 +24,9 @@ class TrackedEdge(object):
                 return True
         return False
 
+    def hasFace(self, faceName):
+        return faceName in self._faceNames
+
     def isValid(self):
         return self._valid
 

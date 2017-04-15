@@ -6,7 +6,6 @@ class TrackedFace(object):
 
     def __init__(self, occFace, name):
         self._occFace = occFace
-        self._unsharedEdges = list(range(len(occFace.Edges)))
         self._name = name
 
     def getOCCFace(self):
