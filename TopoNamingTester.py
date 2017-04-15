@@ -41,11 +41,18 @@ class TestTrackedEdge(unittest.TestCase):
     def setUp(self):
         self.maker = MockObjectMaker()
         self.mock_Edge0 = self.maker.OCCEdge()
+        self.mock_Face0 = self.maker.OCCFace()
         self.trackedEdge = TrackedEdge(self.mock_Edge0, 'Edge000')
 
     def test_createNewTrackedEdge(self):
         self.trackedEdge._name = 'Edge000'
         self.trackedEdge._valid = False
+
+    def test_addFace(self):
+        retval = self.trackedEdge.addFace(self.mock_Face0)
+
+        self.assertFalse(retVal)
+        self.assertEqual(self.trackedEdge._faceNames, [])
 
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
