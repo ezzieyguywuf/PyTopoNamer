@@ -12,6 +12,18 @@ class TrackedEdge(object):
         self._valid = False
         self._faceNames = []
 
+    def _checkEdge(self, occEdge):
+        if occEdge.isEqual(self._occEdge):
+            return True
+        return False
+
+    def _checkEdges(self, occEdges):
+        for occEdge in occEdges:
+            check = self._checkEdge(occEdge)
+            if check:
+                return True
+        return False
+
     def addFace(self, trackedFace):
         '''Check if this TrackedEdge has a common Edge with trackedFace
         
@@ -19,3 +31,5 @@ class TrackedEdge(object):
 
         if self._checkEdges(trackedFace.getOCCFace().Edges):
             self._faceNames.append(trackedFace.getName())
+            return True
+        return False

@@ -64,9 +64,10 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertEqual(self.trackedEdge._faceNames, [])
 
     def test_addFace_yesSharedEdge(self):
+        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
         retval = self.trackedEdge.addFace(self.trackedFace)
 
-        self.assertFalse(True)
+        self.assertTrue(retval)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000'])
 
 class TestTracker(unittest.TestCase):
