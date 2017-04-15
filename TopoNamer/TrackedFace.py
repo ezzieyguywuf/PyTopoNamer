@@ -33,3 +33,7 @@ class TrackedFace(object):
         for i,Edge in enumerate(self._occFace.Edges):
             if Edge.isEqual(occEdge):
                 self._unshareEdge(i)
+
+    def updateOCCFace(self, newOCCFace):
+        self._occFace = newOCCFace
+        self._unsharedEdges = list(range(len(newOCCFace.Edges)))
