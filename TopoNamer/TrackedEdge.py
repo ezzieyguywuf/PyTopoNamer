@@ -37,5 +37,7 @@ class TrackedEdge(object):
                 msg = 'Only two Faces may share a given Edge.'
                 raise ValueError(msg)
             self._faceNames.append(trackedFace.getName())
+            if len(self._faceNames) == 2:
+                self._valid = True
             return True
         return False
