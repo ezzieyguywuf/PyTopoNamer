@@ -30,6 +30,9 @@ class TrackedEdge(object):
         If it does, we will add the name of the face to _faceNames'''
 
         if self._checkEdges(trackedFace.getOCCFace().Edges):
+            if len(self._faceNames) == 2:
+                msg = 'Only two Faces may share a given Edge.'
+                raise ValueError(msg)
             self._faceNames.append(trackedFace.getName())
             return True
         return False
