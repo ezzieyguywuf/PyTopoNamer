@@ -1,12 +1,10 @@
-class TopoEdgeAndFaceTracker(object):
-    '''A list of  Edges
+from TopoNamer.TrackedFace import TrackedFace
+from TopoNamer.TrackedEdge import TrackedEdge
 
-    The first time an Edge is added, it is considered an 'Open' Edge. The second time, it
-    becomes a 'Real' Edge. Any subsequent additions will result in an error
-    '''
+class TopoTracker(object):
     def __init__(self):
-        self._edgeNames = {}
-        self._faceNames = {}
+        self._edgeTrackers = []
+        self._faceTrackers = [] 
 
         # This will be the basis for face and edge numbering. Sub-faces and sub-edges will
         # not add to this value.

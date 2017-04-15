@@ -1,12 +1,11 @@
 import unittest
-from TopoNamer.TopoEdgeAndFaceTracker import TopoEdgeAndFaceTracker
+from TopoNamer.TopoTracker import TopoTracker
 from test.TestingHelpers import MockObjectMaker
 
 class TestTracker(unittest.TestCase):
-    '''Tests the Edges class found in TopoNamer'''
     def setUp(self):
         self.maker = MockObjectMaker()
-        self.tracker = TopoEdgeAndFaceTracker()
+        self.tracker = TopoTracker()
 
     def test_makeName(self):
         self.tracker._numbFaces = 0
@@ -29,6 +28,11 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(name1, 'Edge002bc')
         self.assertEqual(name2, 'Face001aaa')
         self.assertEqual(name3, 'Edge002aa')
+
+
+class TestTracker_legacy(object):
+    '''This tester is no longer valid. We\'ll just use it as a basis  for the real tracker
+    above'''
 
     def test_addEdge(self):
         self.tracker._addEdge('Face000', 'Face001')
