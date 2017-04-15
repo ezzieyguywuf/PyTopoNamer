@@ -37,3 +37,10 @@ class TestTracker(unittest.TestCase):
         self.tracker.addFace(mock_face1)
 
         self.assertTrue(len(self.tracker._faceTrackers) == 2)
+
+    def test_addSameFaceError(self):
+        mock_face0 = self.maker.OCCFace()
+
+        self.tracker.addFace(mock_face0)
+
+        self.assertRaises(ValueError, self.tracker.addFace, mock_face0)
