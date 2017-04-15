@@ -3,6 +3,7 @@ from unittest import mock
 from TopoNamer import TopoNamer, TopoEdgeAndFaceTracker
 from TestingHelpers import MockObjectMaker
 from TrackedFace import TrackedFace
+from TrackedEdge import TrackedEdge
 
 class TestTrackedFace(unittest.TestCase):
     def setUp(self):
@@ -44,7 +45,7 @@ class TestTrackedEdge(unittest.TestCase):
 
     def test_createNewTrackedEdge(self):
         self.trackedEdge._name = 'Edge000'
-        self.trackedEdge._isValid = False
+        self.trackedEdge._valid = False
 
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
