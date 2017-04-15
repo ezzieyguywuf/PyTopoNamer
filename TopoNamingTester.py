@@ -7,43 +7,32 @@ from TrackedFace import TrackedFace
 class TestTrackedFace(unittest.TestCase):
     def setUp(self):
         self.maker = MockObjectMaker()
+        self.mock_face0 = self.maker.OCCFace()
+        self.trackedFace = TrackedFace(self.mock_face0, 'Face000')
 
     def test_createNewTrackedFace(self):
-        mock_face0 = self.maker.OCCFace()
-        trackedFace = TrackedFace(mock_face0, 'Face000')
-
-        self.assertEqual(mock_face0, trackedFace._occFace)
-        self.assertEqual('Face000', trackedFace._name)
-        self.assertEqual([0,1,2,3], trackedFace._unsharedEdges)
+        self.assertEqual(self.mock_face0, self.trackedFace._occFace)
+        self.assertEqual('Face000', self.trackedFace._name)
+        self.assertEqual([0,1,2,3], self.trackedFace._unsharedEdges)
 
     def test_isSharedEdgeTrue(self):
-        mock_face0 = self.maker.OCCFace()
-        trackedFace = TrackedFace(mock_face0, 'Face000')
-
-        isShared = trackedFace.isEdgeShared(mock_face0.Edges[0])
+        isShared = self.trackedFace.isEdgeShared(self.mock_face0.Edges[0])
         self.assertTrue(isShared)
 
     def test_isSharedEdgeFalse(self):
-        mock_face0 = self.maker.OCCFace()
         mock_edge0 = self.maker.OCCEdge()
-        trackedFace = TrackedFace(mock_face0, 'Face000')
 
-        isShared = trackedFace.isEdgeShared(mock_edge0)
+        isShared = self.trackedFace.isEdgeShared(mock_edge0)
         self.assertFalse(isShared)
 
     def test_updateUnsharedEdge(self):
-        mock_face0 = self.maker.OCCFace()
-        trackedFace = TrackedFace(mock_face0, 'Face000')
-
-        trackedFace.updateUnsharedEdge(mock_face0.Edges[0])
-        self.assertEqual(trackedFace._unsharedEdges, [1,2,3])
+        self.trackedFace.updateUnsharedEdge(self.mock_face0.Edges[0])
+        self.assertEqual(self.trackedFace._unsharedEdges, [1,2,3])
 
     def test_updateUnsharedEdgeError(self):
-        mock_face0 = self.maker.OCCFace()
-        trackedFace = TrackedFace(mock_face0, 'Face000')
-        trackedFace._unsharedEdges = [1,2,3]
+        self.trackedFace._unsharedEdges = [1,2,3]
 
-        self.assertRaises(ValueError, trackedFace.updateUnsharedEdge, mock_face0.Edges[0])
+        self.assertRaises(ValueError, self.trackedFace.updateUnsharedEdge, self.mock_face0.Edges[0])
 
 class TestTracker(unittest.TestCase):
     '''Tests the Edges class found in TopoNamer'''
