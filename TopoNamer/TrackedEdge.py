@@ -24,6 +24,9 @@ class TrackedEdge(object):
                 return True
         return False
 
+    def isValid(self):
+        return self._valid
+
     def addFace(self, trackedFace):
         '''Check if this TrackedEdge has a common Edge with trackedFace
         
