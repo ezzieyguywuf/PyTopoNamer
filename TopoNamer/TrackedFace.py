@@ -15,25 +15,5 @@ class TrackedFace(object):
     def getName(self):
         return self._name
 
-    def _unshareEdge(self, index):
-        try:
-            toPop = self._unsharedEdges.index(index)
-        except ValueError:
-            msg = 'No more than two Faces can share a single Edge'
-            raise ValueError(msg)
-        self._unsharedEdges.pop(toPop)
-
-    def isEdgeShared(self, occEdge):
-        for Edge in self._occFace.Edges:
-            if Edge.isEqual(occEdge):
-                return True
-        return False
-
-    def updateUnsharedEdge(self, occEdge):
-        for i,Edge in enumerate(self._occFace.Edges):
-            if Edge.isEqual(occEdge):
-                self._unshareEdge(i)
-
     def updateOCCFace(self, newOCCFace):
         self._occFace = newOCCFace
-        self._unsharedEdges = list(range(len(newOCCFace.Edges)))
