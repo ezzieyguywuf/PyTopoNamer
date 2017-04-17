@@ -9,7 +9,6 @@ class TrackedEdge(object):
     def __init__(self, occEdge, edgeName):
         self._occEdge = occEdge
         self._name = edgeName
-        self._valid = False
         self._faceNames = []
 
     def _checkEdge(self, occEdge):
@@ -28,7 +27,7 @@ class TrackedEdge(object):
         return faceName in self._faceNames
 
     def isValid(self):
-        return self._valid
+        return len(self._faceNames) == 2
 
     def getOCCEdge(self):
         return self._occEdge
@@ -43,12 +42,9 @@ class TrackedEdge(object):
                 msg = 'Only two Faces may share a given Edge.'
                 raise ValueError(msg)
             self._faceNames.append(trackedFace.getName())
-            if len(self._faceNames) == 2:
-                self._valid = True
             return True
         return False
 
     def delFace(self, faceName):
         index = self._faceNames.index(faceName)
         self._faceNames.pop(index)
-        self._valid = False
