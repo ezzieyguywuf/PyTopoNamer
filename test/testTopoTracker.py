@@ -111,31 +111,34 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(self.tracker._edgeTrackers[0]._occEdge, mock_face0.Edges[0])
         self.assertEqual(self.tracker._edgeTrackers[0]._faceNames, ['Face000', 'Face001'])
 
-    # def test_modifyFaceWithSplitFace(self):
-        # '''An example of this is a square face that turns into a U-shaped face.'''
-        # mock_face0a = self.maker.OCCFace()
-        # mock_face0b= self.maker.OCCFace()
-        # mock_face1a = self.maker.OCCFace()
-        # mock_face1b = self.maker.OCCFace()
+    def test_modifyFaceWithSplitEdge(self):
+        '''An example of this is a square face that turns into a U-shaped face.'''
+        mock_face0a = self.maker.OCCFace()
+        mock_face0b= self.maker.OCCFace()
+        mock_face1a = self.maker.OCCFace()
+        mock_face1b = self.maker.OCCFace()
 
-        # mock_face1a.Edges[0] = mock_face0a.Edges[0]
+        mock_face1a.Edges[0] = mock_face0a.Edges[0]
 
-        # # the edge between mock_face0 and mock_face1 is getting split, thus creating a
-        # # fifth edge on each face.
-        # mock_face0b.Edges.append(self.maker.OCCEdge())
-        # mock_face1b.Edges.append(self.maker.OCCEdge())
-        # mock_face1b.Edges[-2] = mock_face0b.Edges[-2]
-        # mock_face1b.Edges[-1] = mock_face0b.Edges[-1]
+        # the edge between mock_face0 and mock_face1 is getting split, thus creating a
+        # fifth edge on each face.
+        mock_face0b.Edges.append(self.maker.OCCEdge())
+        mock_face1b.Edges.append(self.maker.OCCEdge())
+        mock_face1b.Edges[-2] = mock_face0b.Edges[-2]
+        mock_face1b.Edges[-1] = mock_face0b.Edges[-1]
 
-        # self.tracker.addFace(mock_face0a)
-        # self.tracker.addFace(mock_face1a)
-        # self.tracker.modifyFace(mock_face0a, mock_face0b)
-        # self.tracker.modifyFace(mock_face1a, mock_face1b)
+        # Add the two faces with the shared Edge
+        self.tracker.addFace(mock_face0a)
+        self.tracker.addFace(mock_face1a)
 
-        # trackedEdgesValues = []
-        # for edgeTracker in self.tracker._edgeTrackers:
-            # trackedEdgesValues.append(edgeTracker.getOCCEdge().value)
+        # Edge name should be 'Edge000' here
+        origEdgeName = self.tracker.getEdgeName(mock_face0a.Edges[0])
 
-        # checkEdges = mock_face0.Edges + mock_face1b.Edges
-        # checkEdgesValues = [i.value for i in checkEdges]
-        # self.assertEqual(checkEdgesValues, trackedEdgesValues)
+
+        # Modify both faces to the U-shaped faces
+        self.tracker.modifyFace(mock_face0a, mock_face0b)
+        self.tracker.modifyFace(mock_face1a, mock_face1b)
+
+        finalEdgeName = self.tracker.getLatestEdge(origEdgeName)
+
+        self.assertEqual(finalEdgeName, ['Edge000a', 'Edge000b'])
