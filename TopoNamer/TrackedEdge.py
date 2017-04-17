@@ -11,15 +11,9 @@ class TrackedEdge(object):
         self._name = edgeName
         self._faceNames = []
 
-    def _checkEdge(self, occEdge):
-        if occEdge.isEqual(self._occEdge):
-            return True
-        return False
-
     def _checkEdges(self, occEdges):
         for occEdge in occEdges:
-            check = self._checkEdge(occEdge)
-            if check:
+            if occEdge.isEqual(self._occEdge):
                 return True
         return False
 
