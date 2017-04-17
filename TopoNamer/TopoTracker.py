@@ -29,17 +29,12 @@ class TopoTracker(object):
             if edgeTracker.hasFace(faceName):
                 edgeTracker.delFace(faceName)
 
-    def getEdge(self, edgeName):
-        face1, face2 = self._edgeNames[edgeName]['faceNames']
-        face1 = self._faceNames[face1]['faceShape']
-        face2 = self._faceNames[face2]['faceShape']
-
-        for edge1 in face1.Edges:
-            for edge2 in face2.Edges:
-                if edge1.isEqual(edge2):
-                    return edge1
-        msg = 'This edgeName is invalid - no two Faces share it'
-        raise ValueError(msg)
+    def getEdgeName(self, OCCEdge):
+        index = self._isTrackedEdge(OCCEdge)
+        if index is None:
+            msg = 'This edgeName is invalid - no two Faces share it'
+            raise ValueError(msg)
+        return self._edgeTrackers[index].getName()
 
     def _makeName(self, base, sub=False):
         if sub == False:
