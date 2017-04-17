@@ -77,7 +77,11 @@ class TopoTracker(object):
         trackedFace = TrackedFace(OCCFace, name)
         self._faceTrackers.append(trackedFace)
 
-        for OCCEdge in OCCFace.Edges:
+        self._checkEdges(trackedFace)
+
+    def _checkEdges(self, trackedFace):
+        OCCEdges = trackedFace.getOCCFace().Edges
+        for OCCEdge in OCCEdges:
             check = self._isTrackedEdge(OCCEdge)
             if not check is None:
                 self._edgeTrackers[check].addFace(trackedFace)
@@ -92,3 +96,4 @@ class TopoTracker(object):
             if faceTracker.getOCCFace().isEqual(oldOCCFace):
                 name = faceTracker.getName()
                 self._clearFace(name)
+                # self._checkEdges(faceTracker)

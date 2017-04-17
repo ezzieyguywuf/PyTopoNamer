@@ -61,10 +61,10 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(len(self.tracker._edgeTrackers), 7)
         self.assertTrue(self.tracker._edgeTrackers[0].isValid())
 
-    def test_modifyFace_makeEdgeInvalid(self):
+    def test_modifyFaceWithEdgeNoLongerBeingShared(self):
         mock_face0 = self.maker.OCCFace()
         mock_face1a = self.maker.OCCFace()
-        mock_face1b = copy.deepcopy(mock_face1a)
+        mock_face1b = self.maker.OCCFace()
         mock_face1a.Edges[0] = mock_face0.Edges[0]
 
         self.tracker.addFace(mock_face0)
@@ -72,8 +72,10 @@ class TestTracker(unittest.TestCase):
         self.tracker.modifyFace(mock_face1a, mock_face1b)
 
         self.assertFalse(self.tracker._edgeTrackers[0].isValid())
+        self.assertEqual(self.tracker._edgeTrackers[0]._occEdge, mock_face0.Edges[0])
+        self.assertEqual(self.tracker._edgeTrackers[0]._faceNames, ['Face000'])
 
-    def test_modifyFace_edgeStillValid(self):
+    def test_modifyFaceWithMovedEdge(self):
         mock_face0 = self.maker.OCCFace()
         mock_face1a = self.maker.OCCFace()
         mock_face1b = copy.deepcopy(mock_face1a)
@@ -85,3 +87,24 @@ class TestTracker(unittest.TestCase):
         self.tracker.modifyFace(mock_face1a, mock_face1b)
 
         self.assertTrue(self.tracker._edgeTrackers[0].isValid())
+        self.assertEqual(self.tracker._edgeTrackers[0]._occEdge, mock_face0.Edges[0])
+        self.assertEqual(self.tracker._edgeTrackers[0]._faceNames, ['Face000', 'Face001'])
+        self.assertEqual(len(self.tracker._edgeTrackers), 1)
+
+    def test_modifyFaceWithNoSameEdges(self):
+        mock_face0 = self.maker.OCCFace()
+        mock_face1a = self.maker.OCCFace()
+        mock_face1b = self.maker.OCCFace()
+        mock_face1a.Edges[0] = mock_face0.Edges[0]
+
+        self.tracker.addFace(mock_face0)
+        self.tracker.addFace(mock_face1a)
+        self.tracker.modifyFace(mock_face1a, mock_face1b)
+
+        trackedEdgesValues = []
+        for edgeTracker in self.tracker._edgeTrackers:
+            trackedEdgesValues.append(edgeTracker.getOCCEdge().value)
+
+        checkEdges = mock_face0.Edges + mock_face1b.Edges
+        checkEdgesValues = [i.value for i in checkEdges]
+        self.assertEqual(checkEdgesValues, trackedEdgesValues)
