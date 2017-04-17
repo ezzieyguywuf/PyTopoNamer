@@ -89,7 +89,6 @@ class TestTracker(unittest.TestCase):
         self.assertTrue(self.tracker._edgeTrackers[0].isValid())
         self.assertEqual(self.tracker._edgeTrackers[0]._occEdge, mock_face0.Edges[0])
         self.assertEqual(self.tracker._edgeTrackers[0]._faceNames, ['Face000', 'Face001'])
-        self.assertEqual(len(self.tracker._edgeTrackers), 1)
 
     def test_modifyFaceWithNoSameEdges(self):
         mock_face0 = self.maker.OCCFace()

@@ -22,7 +22,7 @@ class TopoTracker(object):
                 return i
         return None
 
-    def _clearFace(self, faceName):
+    def _clearFaceFromEdgeTrackers(self, faceName):
         '''Checks for faceName in self._edgeTrackers. If present, deletes it.'''
 
         for edgeTracker in self._edgeTrackers:
@@ -95,5 +95,5 @@ class TopoTracker(object):
         for faceTracker in self._faceTrackers:
             if faceTracker.getOCCFace().isEqual(oldOCCFace):
                 name = faceTracker.getName()
-                self._clearFace(name)
+                self._clearFaceFromEdgeTrackers(name)
                 # self._checkEdges(faceTracker)
