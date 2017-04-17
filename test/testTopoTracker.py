@@ -41,6 +41,15 @@ class TestTracker(unittest.TestCase):
         edgeName = self.tracker.getEdgeName(mock_face0.Edges[0])
         self.assertEqual(edgeName, 'Edge000')
 
+    def test_getEdgeNameError(self):
+        mock_face0 = self.maker.OCCFace()
+        mock_face1 = self.maker.OCCFace()
+
+        self.tracker.addFace(mock_face0)
+        self.tracker.addFace(mock_face1)
+
+        self.assertRaises(ValueError, self.tracker.getEdgeName, mock_face0.Edges[0])
+
 
     def test_addTwoFaces_noSharedEdges(self):
         mock_face0 = self.maker.OCCFace()

@@ -31,7 +31,7 @@ class TopoTracker(object):
 
     def getEdgeName(self, OCCEdge):
         index = self._isTrackedEdge(OCCEdge)
-        if index is None:
+        if index is None or not self._edgeTrackers[index].isValid():
             msg = 'This edgeName is invalid - no two Faces share it'
             raise ValueError(msg)
         return self._edgeTrackers[index].getName()
