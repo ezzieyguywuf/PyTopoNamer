@@ -96,4 +96,4 @@ class TopoTracker(object):
             if faceTracker.getOCCFace().isEqual(oldOCCFace):
                 name = faceTracker.getName()
                 self._clearFaceFromEdgeTrackers(name)
-                # self._checkEdges(faceTracker)
+                self._checkEdges(faceTracker)

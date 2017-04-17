@@ -80,6 +80,7 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertTrue(self.trackedEdge.isValid())
 
     def test_delFace(self):
+        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
         self.trackedEdge.addFace(self.trackedFace)
         self.trackedEdge.delFace(self.trackedFace.getName())
 
