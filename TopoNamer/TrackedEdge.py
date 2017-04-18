@@ -6,10 +6,11 @@ class TrackedEdge(object):
     has two faces which share it. If one or both of these Faces no longer exist, the Edge
     is invalid"""
 
-    def __init__(self, occEdge, edgeName):
+    def __init__(self, occEdge, edgeName, parent=None):
         self._occEdge = occEdge
         self._name = edgeName
         self._faceNames = []
+        self._parent = parent
 
     def _checkEdges(self, occEdges):
         for occEdge in occEdges:
