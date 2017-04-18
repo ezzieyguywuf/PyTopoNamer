@@ -28,14 +28,14 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertEqual(self.trackedEdge._faceNames, [])
 
     def test_addFace_yesSharedEdgeFirstFace(self):
-        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
+        self.trackedFace._occObj.Edges[0] = self.mock_Edge0
         retval = self.trackedEdge.addFace(self.trackedFace)
 
         self.assertTrue(retval)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000'])
 
     def test_addFace_yesSharedEdgeSecondFace(self):
-        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
+        self.trackedFace._occObj.Edges[0] = self.mock_Edge0
         mock_face1 = self.maker.OCCFace()
         mock_face1.Edges[1] = self.mock_Edge0
         trackedFace1 = TrackedFace(mock_face1, 'Face001')
@@ -48,7 +48,7 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertEqual(self.trackedEdge._faceNames, ['Face000', 'Face001'])
 
     def test_addFace_errorIfThirdFaceAdded(self):
-        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
+        self.trackedFace._occObj.Edges[0] = self.mock_Edge0
         mock_face1 = self.maker.OCCFace()
         mock_face1.Edges[1] = self.mock_Edge0
         trackedFace1 = TrackedFace(mock_face1, 'Face001')
@@ -69,7 +69,7 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertFalse(self.trackedEdge.isValid())
 
     def test_isValid_true(self):
-        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
+        self.trackedFace._occObj.Edges[0] = self.mock_Edge0
         mock_face1 = self.maker.OCCFace()
         mock_face1.Edges[1] = self.mock_Edge0
         trackedFace1 = TrackedFace(mock_face1, 'Face001')
@@ -80,7 +80,7 @@ class TestTrackedEdge(unittest.TestCase):
         self.assertTrue(self.trackedEdge.isValid())
 
     def test_delFace(self):
-        self.trackedFace._occFace.Edges[0] = self.mock_Edge0
+        self.trackedFace._occObj.Edges[0] = self.mock_Edge0
         self.trackedEdge.addFace(self.trackedFace)
         self.trackedEdge.delFace(self.trackedFace.getName())
 

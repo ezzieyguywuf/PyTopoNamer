@@ -17,7 +17,7 @@ class TestTrackedFace(unittest.TestCase):
         self.assertEqual(fetchedName, 'Face000')
 
     def test_createNewTrackedFace(self):
-        self.assertEqual(self.mock_face0, self.trackedFace._occFace)
+        self.assertEqual(self.mock_face0, self.trackedFace._occObj)
         self.assertEqual('Face000', self.trackedFace._name)
 
     def test_updateOCCFace(self):

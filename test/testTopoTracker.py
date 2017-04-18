@@ -93,7 +93,7 @@ class TestTracker(unittest.TestCase):
         self.tracker.modifyFace(mock_face1a, mock_face1b)
 
         self.assertFalse(self.tracker._edgeTrackers[0].isValid())
-        self.assertEqual(self.tracker._edgeTrackers[0]._occEdge, mock_face0.Edges[0])
+        self.assertEqual(self.tracker._edgeTrackers[0]._occObj, mock_face0.Edges[0])
         self.assertEqual(self.tracker._edgeTrackers[0]._faceNames, ['Face000'])
 
     def test_modifyFaceWithMovedEdge(self):
@@ -108,7 +108,7 @@ class TestTracker(unittest.TestCase):
         self.tracker.modifyFace(mock_face1a, mock_face1b)
 
         self.assertTrue(self.tracker._edgeTrackers[0].isValid())
-        self.assertEqual(self.tracker._edgeTrackers[0]._occEdge, mock_face0.Edges[0])
+        self.assertEqual(self.tracker._edgeTrackers[0]._occObj, mock_face0.Edges[0])
         self.assertEqual(self.tracker._edgeTrackers[0]._faceNames, ['Face000', 'Face001'])
 
     def test_modifyFaceWithSplitEdge(self):

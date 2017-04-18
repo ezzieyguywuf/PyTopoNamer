@@ -1,4 +1,5 @@
-class TrackedEdge(object):
+from TopoNamer.TrackedOCCObj import TrackedOCCObj
+class TrackedEdge(TrackedOCCObj):
 
     """Tracks a given OpenCascade Edge.
     
@@ -7,28 +8,24 @@ class TrackedEdge(object):
     is invalid"""
 
     def __init__(self, occEdge, edgeName, parent=None):
-        self._occEdge = occEdge
-        self._name = edgeName
+        super(TrackedEdge, self).__init__(occEdge, edgeName, parent)
         self._faceNames = []
-        self._parent = parent
 
     def _checkEdges(self, occEdges):
         for occEdge in occEdges:
-            if occEdge.isEqual(self._occEdge):
+            if occEdge.isEqual(self._occObj):
                 return True
         return False
+
+    def getOCCEdge(self):
+        '''Convenience method'''
+        return self.getOCCObj()
 
     def hasFace(self, faceName):
         return faceName in self._faceNames
 
     def isValid(self):
         return len(self._faceNames) == 2
-
-    def getOCCEdge(self):
-        return self._occEdge
-
-    def getName(self):
-        return self._name
 
     def addFace(self, trackedFace):
         '''Check if this TrackedEdge has a common Edge with trackedFace
