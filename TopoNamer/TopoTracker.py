@@ -69,8 +69,8 @@ class TopoTracker(object):
             raise ValueError(msg)
         return self._edgeTrackers[index].getName()
 
-    def getLatestEdge(self, edgeName):
-        '''Given edgeName, returns the latest version of this OCCEdge.
+    def getEdgeByName(self, edgeName):
+        '''Given edgeName, returns the appropriate OCCEdge(s).
         
         This could be multiple Edges if the Edge was split at some point. For that reason,
         this method always returns a list of OCCEdges '''
