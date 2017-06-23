@@ -2,6 +2,17 @@ from TopoNamer.TrackedFace import TrackedFace
 from TopoNamer.TrackedEdge import TrackedEdge
 
 class TopoTracker(object):
+    ''' Tracks the topological Faces and Edges of one solid.
+    
+    This tracking is accomplished by utilizing the helper classes `TrackedFace` and
+    `TrackedEdge`. This class keeps a list of `TrackedFace`s and `TrackedEdge`s. These are
+    added primarily through the `addFace` method.
+    
+    Any time a face is added, a new `TrackedFace` instance is created. Next, each edge in
+    the recently added face is checked - if there are not currently ane `TrackedEdge`s
+    that are topologically equivalent (using OCC's `isEqual` method) to one of the new
+    edges, a new `TrackedEdge` is created. Otherwise, the existing `TrackedEdge` is
+    updated with the current face, i.e. as a second face that shares the Edge.'''
     def __init__(self):
         self._edgeTrackers = []
         self._faceTrackers = [] 
@@ -83,6 +94,10 @@ class TopoTracker(object):
         self._checkEdges(trackedFace)
 
     def _checkEdges(self, trackedFace):
+        '''Updates the list of `TrackedEdge`s appropriately.
+        
+        For each Edge in trackedFace, check if there is already a `TrackedEdge` for it. If
+        not, create one. If so, add this `trackedFace` to it.'''
         OCCEdges = trackedFace.getOCCFace().Edges
         for OCCEdge in OCCEdges:
             check = self._isTrackedEdge(OCCEdge)
