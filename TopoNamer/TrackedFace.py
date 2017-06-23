@@ -10,4 +10,4 @@ class TrackedFace(TrackedOCCObj):
         return self.getOCCObj()
 
     def updateOCCFace(self, newOCCFace):
-        self._occFace = newOCCFace
+        self._occObj = newOCCFace
