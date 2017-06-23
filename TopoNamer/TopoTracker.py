@@ -40,6 +40,16 @@ class TopoTracker(object):
             if edgeTracker.hasFace(faceName):
                 edgeTracker.delFace(faceName)
 
+    def _getFaceTracker(self, OCCFace):
+        '''return the `FaceTracker` that is tracking OCCFace
+        
+        raises exception if OCCFace is not being tracked'''
+        for faceTracker in self._faceTrackers:
+            if faceTracker.getOCCFace().isEqual(OCCFace):
+                return faceTracker
+        msg = "That OCCFace is not being tracked"
+        raise ValueError(msg)
+
     def getEdgeName(self, OCCEdge):
         index = self._isTrackedEdge(OCCEdge)
         if index is None or not self._edgeTrackers[index].isValid():
@@ -110,9 +120,10 @@ class TopoTracker(object):
                 self._edgeTrackers.append(trackedEdge)
 
     def modifyFace(self, oldOCCFace, newOCCFace):
-        for faceTracker in self._faceTrackers:
-            if faceTracker.getOCCFace().isEqual(oldOCCFace):
-                name = faceTracker.getName()
-                faceTracker.updateOCCFace(newOCCFace)
-                self._clearFaceFromEdgeTrackers(name)
-                self._checkEdges(faceTracker)
+        '''Modify the existing `TrackedFace` with the newOCCFace'''
+        faceTracker = self._getFaceTracker(oldOCCFace)
+
+        name = faceTracker.getName()
+        faceTracker.updateOCCFace(newOCCFace)
+        self._clearFaceFromEdgeTrackers(name)
+        self._checkEdges(faceTracker)
