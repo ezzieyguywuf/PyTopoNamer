@@ -63,20 +63,29 @@ class TestTracker(unittest.TestCase):
 
     def test_modifyFaceWithMovedEdge(self):
         # Two faces, face0 and face1a will share one common edge. Next, face1a will be
-        # updated to face1b and will now share a _different_ face with face0. The
-        # topological tracker (self.tracker) should update itself accordingly.
+        # updated to face1b. Topologically, face0 and face1a will share the same Edge as
+        # face0 and face0a. In other words, the Edge itself is the same. However, the Edge
+        # has 'moved' within Face1. In other words, assume for the sakes of this example
+        # that face 1 is square and has rotated 90 degrees relative to face0.
         mock_face0 = self.maker.OCCFace()
         mock_face1a = self.maker.OCCFace()
         mock_face1b = copy.deepcopy(mock_face1a)
-        mock_face1a.Edges[0] = mock_face0.Edges[0]
-        mock_face1b.Edges[1] = mock_face0.Edges[0]
+        sharedEdge = mock_face0.Edges[0]
+        mock_face1a.Edges[0] = sharedEdge
+        mock_face1b.Edges[1] = sharedEdge
 
         self.tracker.addFace(mock_face0)
         self.tracker.addFace(mock_face1a)
         self.tracker.modifyFace(mock_face1a, mock_face1b)
 
-        self.assertFalse(self.tracker._edgeTrackers[0].isValid())
-        self.assertEqual()
+        recoveredEdge = self.tracker._edgeTrackers[0].getOCCEdge()
+        recoveredFace = self.tracker._faceTrackers[1].getOCCFace()
+
+        self.assertTrue(self.tracker._edgeTrackers[0].isValid())
+        self.assertTrue(sharedEdge.isEqual(recoveredEdge))
+        self.assertEqual(len(self.tracker._edgeTrackers), 7)
+        self.assertEqual(len(self.tracker._faceTrackers), 2)
+        self.assertTrue(mock_face1b.isEqual(recoveredFace))
 
     def test_modifyFaceWithNoSameEdges(self):
         mock_face0 = self.maker.OCCFace()
