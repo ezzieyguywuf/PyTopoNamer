@@ -50,6 +50,18 @@ class TopoTracker(object):
         msg = "That OCCFace is not being tracked"
         raise ValueError(msg)
 
+    def _getEdgeTracker(self, EdgeName):
+        '''Return the `EdgeTracker` that is tracking the edge defined by EdgeName
+
+        raises ValueError if the EdgeName has no tracker'''
+        #TODO: speed this up - maybe create a dictionary with key-value pairs of
+        # EdgeNames-IndexNumber
+        for edgeTracker in self._edgeTrackers:
+            if EdgeName == edgeTracker.getName():
+                return edgeTracker
+        msg = '{} is not a valid EdgeName. There is no tracker with that name'
+        raise ValueError(msg)
+
     def getEdgeName(self, OCCEdge):
         index = self._isTrackedEdge(OCCEdge)
         if index is None or not self._edgeTrackers[index].isValid():
@@ -63,7 +75,8 @@ class TopoTracker(object):
         This could be multiple Edges if the Edge was split at some point. For that reason,
         this method always returns a list of OCCEdges '''
 
-        outEdges = []
+        edgeTracker = self._getEdgeTracker(edgeName)
+        return [edgeTracker.getOCCEdge()]
 
     def _makeName(self, base, sub=False):
         if sub == False:
