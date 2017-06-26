@@ -22,7 +22,11 @@ class TrackedEdge(TrackedOCCObj):
         return self.getOCCObj()
 
     def hasFace(self, faceName):
-        return faceName in self._faceNames
+        if type(faceName) == type('')
+            return faceName in self._faceNames
+        else:
+            msg = 'faceName must be the actual topological name of the Face you are checking for'
+            raise ValueError(msg)
 
     def isValid(self):
         '''Returns True if the Edge has two faces that share it.'''
