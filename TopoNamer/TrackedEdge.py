@@ -22,7 +22,7 @@ class TrackedEdge(TrackedOCCObj):
         return self.getOCCObj()
 
     def hasFace(self, faceName):
-        if type(faceName) == type('')
+        if type(faceName) == type(''):
             return faceName in self._faceNames
         else:
             msg = 'faceName must be the actual topological name of the Face you are checking for'
