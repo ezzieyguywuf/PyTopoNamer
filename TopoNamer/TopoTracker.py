@@ -93,9 +93,13 @@ class TopoTracker(object):
         edgeTracker = self._getEdgeTracker(edgeName)
         edges.append(edgeTracker.getOCCEdge())
         faces = edgeTracker.getFaceNames()
+        if len(faces) != 2:
+            msg = 'This Edge in invalid: it is not shared by two Faces'
+            raise ValueError(msg)
         for tracker in self._edgeTrackers:
             if tracker == edgeTracker:
                 continue
+            
             if tracker.hasFace(faces[0]) and tracker.hasFace(faces[1]):
                 edges.append(tracker.getOCCEdge())
         return edges
