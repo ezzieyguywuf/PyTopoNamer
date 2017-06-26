@@ -51,3 +51,6 @@ class TrackedEdge(TrackedOCCObj):
     def delFace(self, faceName):
         index = self._faceNames.index(faceName)
         self._faceNames.pop(index)
+
+    def getFaceNames(self):
+        return self._faceNames[:]

@@ -182,30 +182,40 @@ class TestTracker(unittest.TestCase):
 
         edgeName = self.tracker.getEdgeName(mock_face0.Edges[0])
         checkEdge = self.tracker.getEdgeByName(edgeName)
-        self.assertEqual(checkEdge, [mock_face0.Edges[0]])
+        checkEdgeValues = [edge.value for edge in checkEdge]
+        self.assertEqual(checkEdgeValues, [mock_face0.Edges[0].value])
 
     def test_getEdgeByName_Split(self):
-        pass
-        # '''After getting the EdgeName, the Edge becomes split. getEdgeByName should return
-        # both the split edges'''
-        # mock_face0a = self.maker.OCCFace() # Edges 0, 1, 2 ,3
-        # mock_face0b = copy.deepcopy(mock_face0a )# Edges 0, 1, 2 ,3, 4 (see below)
-        # mock_face0b.Edges.append(self.maker.OCCEdge())
-        # mock_face1a = self.maker.OCCFace() # Edges 0, 6, 7 ,8
-        # mock_face1a.Edges[0] = mock_face0a.Edges[0]
-        # mock_face1b = copy.deepcopy(mock_face0a )# Edges 0, 6, 7, 8, 4 (see below)
-        # mock_face1b.Edges.append(mock_face0b.Edges[-1])
+        '''After getting the EdgeName, the Edge becomes split. getEdgeByName should return
+        both the split edges'''
+        mock_face0a = self.maker.OCCFace() # Edges 0, 1, 2 ,3
+        mock_face0b = copy.deepcopy(mock_face0a )# Edges 0, 1, 2 ,3, 4 (see below)
+        mock_face0b.Edges.append(self.maker.OCCEdge())
+        mock_face1a = self.maker.OCCFace() # Edges 0, 6, 7 ,8
+        mock_face1a.Edges[0] = mock_face0a.Edges[0]
+        mock_face1b = copy.deepcopy(mock_face1a )# Edges 0, 6, 7, 8, 4 (see below)
+        mock_face1b.Edges.append(mock_face0b.Edges[-1])
 
-        # self.tracker.addFace(mock_face0a)
-        # self.tracker.addFace(mock_face1a)
-        # edgeName = self.tracker.getEdgeName(mock_face0a.Edges[0])
+        self.tracker.addFace(mock_face0a)
+        self.tracker.addFace(mock_face1a)
+        edgeName = self.tracker.getEdgeName(mock_face0a.Edges[0])
 
+        self.tracker.modifyFace(mock_face0a, mock_face0b)
+        self.tracker.modifyFace(mock_face1a, mock_face1b)
 
-        # checkEdge = self.tracker.getEdgeByName(edgeName)
-        # self.assertEqual(checkEdge, [mock_face0.Edges[0]])
+        checkEdges = self.tracker.getEdgeByName(edgeName)
+        checkValues = [edge.value for edge in checkEdges]
+        # print('trackers')
+        # print([i.getOCCEdge().value for i in self.tracker._edgeTrackers])
+        # print('mock_face0a, 0b, 1a, 1b')
+        # print([i.value for i in mock_face0a.Edges])
+        # print([i.value for i in mock_face0b.Edges])
+        # print([i.value for i in mock_face1a.Edges])
+        # print([i.value for i in mock_face1b.Edges])
+        # import pdb; pdb.set_trace()
+        self.assertEqual(checkValues, [mock_face0b.Edges[0].value, mock_face0b.Edges[-1].value])
 
-    def test_modifyFaceWithSplitEdge(self):
-        pass
+    # def test_modifyFaceWithSplitEdge(self):
         # '''mock_face0a and mock_face1a share an edge. The edge is subsequently split,
         # resulting in both mock_face0a and mock_face1a being modified.'''
         # mock_face0a = self.maker.OCCFace() # Edges 0, 1, 2 ,3
@@ -220,7 +230,7 @@ class TestTracker(unittest.TestCase):
         # self.tracker.addFace(mock_face1a)
 
         # # edgeName is how the end-user will track a given edge
-        # edgeName = self.tracker.getEdgeName(mocke_face0a.Edges[0])
+        # edgeName = self.tracker.getEdgeName(mock_face0a.Edges[0])
 
         # self.tracker.modifyFace(mock_face0a, mock_face0b)
         # self.tracker.modifyFace(mock_face1a, mock_face1b)

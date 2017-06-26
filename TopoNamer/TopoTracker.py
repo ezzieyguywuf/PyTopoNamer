@@ -83,10 +83,22 @@ class TopoTracker(object):
         '''Given edgeName, returns the appropriate OCCEdge(s).
         
         This could be multiple Edges if the Edge was split at some point. For that reason,
-        this method always returns a list of OCCEdges '''
+        this method always returns a list of OCCEdges. Note: due to the implementation,
+        even if edgeName itself was never split this may still return multiple Edges. For
+        example, if Edge000 gets split into Edge000 + Edge004, even if this method is
+        called with Edge004 it will return both Edges.'''
+
+        edges = []
 
         edgeTracker = self._getEdgeTracker(edgeName)
-        return [edgeTracker.getOCCEdge()]
+        edges.append(edgeTracker.getOCCEdge())
+        faces = edgeTracker.getFaceNames()
+        for tracker in self._edgeTrackers:
+            if tracker == edgeTracker:
+                continue
+            if tracker.hasFace(faces[0]) and tracker.hasFace(faces[1]):
+                edges.append(tracker.getOCCEdge())
+        return edges
 
     def _makeName(self, base, sub=False):
         if sub == False:
