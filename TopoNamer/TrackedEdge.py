@@ -25,20 +25,24 @@ class TrackedEdge(TrackedOCCObj):
         return faceName in self._faceNames
 
     def isValid(self):
+        '''Returns True if the Edge has two faces that share it.'''
         return len(self._faceNames) == 2
 
     def addFace(self, trackedFace):
         '''Check if this TrackedEdge has a common Edge with trackedFace
         
-        If it does, we will add the name of the face to _faceNames'''
+        If it does, we will add the name of the face to _faceNames. If it doesn't, then it
+        returns false and changes nothing internally '''
 
-        if self._checkEdges(trackedFace.getOCCFace().Edges):
-            if len(self._faceNames) == 2:
-                msg = 'Only two Faces may share a given Edge.'
-                raise ValueError(msg)
-            self._faceNames.append(trackedFace.getName())
-            return True
-        return False
+        if not self._checkEdges(trackedFace.getOCCFace().Edges):
+            msg = 'Cannot add a face that does not contain this Edge'
+            raise ValueError(msg)
+        elif len(self._faceNames) == 2:
+            msg = 'Only two Faces may share a given Edge.'
+            raise ValueError(msg)
+
+        self._faceNames.append(trackedFace.getName())
+
 
     def delFace(self, faceName):
         index = self._faceNames.index(faceName)

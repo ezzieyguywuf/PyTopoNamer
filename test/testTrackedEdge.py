@@ -22,16 +22,18 @@ class TestTrackedEdge(unittest.TestCase):
         self.trackedEdge._valid = False
 
     def test_addFace_noSharedEdge(self):
-        retval = self.trackedEdge.addFace(self.trackedFace)
+        mock_face1 = self.maker.OCCFace()
+        trackedFace1 = TrackedFace(mock_face1, 'Face001')
 
-        self.assertFalse(retval)
-        self.assertEqual(self.trackedEdge._faceNames, [])
+        self.trackedFace._occObj.Edges[0] = self.mock_Edge0
+        self.trackedEdge.addFace(self.trackedFace)
+
+        self.assertRaises(ValueError, self.trackedEdge.addFace, trackedFace1)
 
     def test_addFace_yesSharedEdgeFirstFace(self):
         self.trackedFace._occObj.Edges[0] = self.mock_Edge0
-        retval = self.trackedEdge.addFace(self.trackedFace)
+        self.trackedEdge.addFace(self.trackedFace)
 
-        self.assertTrue(retval)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000'])
 
     def test_addFace_yesSharedEdgeSecondFace(self):
@@ -40,11 +42,9 @@ class TestTrackedEdge(unittest.TestCase):
         mock_face1.Edges[1] = self.mock_Edge0
         trackedFace1 = TrackedFace(mock_face1, 'Face001')
 
-        retval0 = self.trackedEdge.addFace(self.trackedFace)
-        retval1 = self.trackedEdge.addFace(trackedFace1)
+        self.trackedEdge.addFace(self.trackedFace)
+        self.trackedEdge.addFace(trackedFace1)
 
-        self.assertTrue(retval0)
-        self.assertTrue(retval1)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000', 'Face001'])
 
     def test_addFace_errorIfThirdFaceAdded(self):
@@ -56,16 +56,13 @@ class TestTrackedEdge(unittest.TestCase):
         mock_face2.Edges[2] = self.mock_Edge0
         trackedFace2 = TrackedFace(mock_face2, 'Face002')
 
-        retval = self.trackedEdge.addFace(self.trackedFace)
-        retval = self.trackedEdge.addFace(trackedFace1)
+        self.trackedEdge.addFace(self.trackedFace)
+        self.trackedEdge.addFace(trackedFace1)
 
-        self.assertTrue(retval)
         self.assertEqual(self.trackedEdge._faceNames, ['Face000', 'Face001'])
         self.assertRaises(ValueError, self.trackedEdge.addFace, trackedFace2)
 
     def test_isValid_false(self):
-        self.trackedEdge.addFace(self.trackedFace)
-
         self.assertFalse(self.trackedEdge.isValid())
 
     def test_isValid_true(self):
