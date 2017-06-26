@@ -61,6 +61,19 @@ class TestTracker(unittest.TestCase):
         self.assertEqual(len(self.tracker._edgeTrackers), 7)
         self.assertTrue(self.tracker._edgeTrackers[0].isValid())
 
+    def test_addFaceWithSplitSharedEdge(self):
+        '''face0 and face1 will share two edges.'''
+        mock_face0 = self.maker.OCCFace() # edges 0, 1, 2 ,3, 4 (see below)
+        mock_face0.Edges.append(self.maker.OCCEdge())
+        mock_face1 = self.maker.OCCFace() # edges 0, 5, 6 ,7, 8 (see below)
+        mock_face1.Edges.append(mock_face0.Edges[-1])
+        mock_face1.Edges[0] = mock_face0.Edges[0]
+
+        self.tracker.addFace(mock_face0)
+        self.tracker.addFace(mock_face1)
+
+        # TODO: finish writing this test
+
     def test_modifyFaceWithMovedEdge(self):
         # Two faces, face0 and face1a will share one common edge. Next, face1a will be
         # updated to face1b. Instead of face1 sharing its first edge with face0, it will
@@ -141,6 +154,19 @@ class TestTracker(unittest.TestCase):
         self.tracker.addFace(mock_face1)
 
         self.assertRaises(ValueError, self.tracker.getEdgeName, mock_face0.Edges[1])
+
+    def test_getEdgeNameFromFaces(self):
+        '''If two faces are provided, the name of the Edge they share is returned'''
+        mock_face0 = self.maker.OCCFace() # Edges 0, 1, 2 ,3
+        mock_face1 = self.maker.OCCFace() # Edges 0, 5, 6 ,7
+        mock_face1.Edges[0] = mock_face0.Edges[0]
+
+        faceName0 = self.tracker.addFace(mock_face0)
+        faceName1 = self.tracker.addFace(mock_face1)
+
+        edgeName = self.tracker.getEdgeNameFromFaces(faceName0, faceName1)
+
+        self.assertEqual(edgeName, 'Edge000')
 
     def test_getEdgeByName(self):
         '''should just return the shared edge'''
