@@ -63,11 +63,21 @@ class TopoTracker(object):
         raise ValueError(msg)
 
     def getEdgeName(self, OCCEdge):
+        '''Returns the topological name of OCCEdge'''
         index = self._isTrackedEdge(OCCEdge)
         if index is None or not self._edgeTrackers[index].isValid():
             msg = 'This edgeName is invalid - no two Faces share it'
             raise ValueError(msg)
         return self._edgeTrackers[index].getName()
+
+    def getEdgeNameFromFaces(self, OCCFace0, OCCFace1):
+        '''Returns the topological name of an Edge shared by Face0 and Face1'''
+        for edgeTracker in self._edgeTrackers:
+            if edgeTracker.hasFace(OCCFace0) and edgeTracker.hasFace(OCCFace1):
+                return edgeTracker.getName()
+        msg = 'There is no Edge that is shared by those two faces'
+        raise ValueError(msg)
+
 
     def getEdgeByName(self, edgeName):
         '''Given edgeName, returns the appropriate OCCEdge(s).
@@ -104,7 +114,9 @@ class TopoTracker(object):
         return name
 
     def addFace(self, OCCFace):
-        '''Adds OCCFace to the list of tracked Faces'''
+        '''Adds OCCFace to the list of tracked Faces
+
+        returns the topological name of the added Face'''
         for face in self._faceTrackers:
             occFace = face.getOCCFace()
             if occFace.isEqual(OCCFace):
@@ -115,6 +127,7 @@ class TopoTracker(object):
         self._faceTrackers.append(trackedFace)
 
         self._checkEdges(trackedFace)
+        return name
 
     def _checkEdges(self, trackedFace):
         '''Updates the list of `TrackedEdge`s appropriately.
