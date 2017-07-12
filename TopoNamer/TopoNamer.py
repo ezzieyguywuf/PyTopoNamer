@@ -6,6 +6,10 @@ class TopoNamer(object):
     def __init__(self):
         self._tracker = TopoTracker()
 
+    def getEdgeName(self, occEdge):
+        '''Returns the EdgeName of the given OpenCascade Edge'''
+        return self._tracker.getEdgeName(occEdge)
+
     def addShape(self, feature):
         """Track a created Shape's topology
 
