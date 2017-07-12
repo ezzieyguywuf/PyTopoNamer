@@ -27,6 +27,12 @@ class FakePartFeature(object):
 class MockObjectMaker(object):
     def __init__(self):
         self._count = {}
+        self._boxFaces = {'front':0,
+                          'back':1,
+                          'top':2,
+                          'bottom':3,
+                          'left':4,
+                          'right':5}
 
     def _getValue(self, key):
         if not key in self._count.keys():
@@ -64,34 +70,74 @@ class MockObjectMaker(object):
         return mock_face
 
     def BoxFeature(self):
-        # Front = Face0
-        # Back  = Face1
-        # Top   = Face2
-        # Bot   = Face3
-        # Left  = Face4
-        # Right = Face5
         mock_feature = self.FreeCADFeature()
+
+        frt = self._boxFaces['front']
+        bck = self._boxFaces['back']
+        top = self._boxFaces['top']
+        bot = self._boxFaces['bottom']
+        lft = self._boxFaces['left']
+        rgt = self._boxFaces['right']
 
         faces = [self.OCCFace() for i in range(6)]
 
-        faces[2].Edges[0] = faces[0].Edges[0]
-        faces[3].Edges[0] = faces[0].Edges[1]
-        faces[4].Edges[0] = faces[0].Edges[2]
-        faces[5].Edges[0] = faces[0].Edges[3]
+        faces[top].Edges[0] = faces[frt].Edges[0]
+        faces[bot].Edges[0] = faces[frt].Edges[1]
+        faces[lft].Edges[0] = faces[frt].Edges[2]
+        faces[rgt].Edges[0] = faces[frt].Edges[3]
 
-        faces[2].Edges[1] = faces[1].Edges[0]
-        faces[3].Edges[1] = faces[1].Edges[1]
-        faces[4].Edges[1] = faces[1].Edges[2]
-        faces[5].Edges[1] = faces[1].Edges[3]
+        faces[top].Edges[1] = faces[bck].Edges[0]
+        faces[bot].Edges[1] = faces[bck].Edges[1]
+        faces[lft].Edges[1] = faces[bck].Edges[2]
+        faces[rgt].Edges[1] = faces[bck].Edges[3]
 
-        faces[4].Edges[2] = faces[2].Edges[2]
-        faces[5].Edges[2] = faces[2].Edges[3]
+        faces[lft].Edges[2] = faces[top].Edges[2]
+        faces[rgt].Edges[2] = faces[top].Edges[3]
 
-        faces[4].Edges[3] = faces[3].Edges[2]
-        faces[5].Edges[3] = faces[3].Edges[3]
+        faces[lft].Edges[3] = faces[bot].Edges[2]
+        faces[rgt].Edges[3] = faces[bot].Edges[3]
 
         mock_feature.Shape.Faces = faces
         return mock_feature
+
+    def createFillet(self):
+        '''Will create a fillet between the Front and Top faces'''
+        # Since OCC rebuilds the entire solid, every single face will need to be updated
+        newBox = self.BoxFeature()
+
+        # The fillet is an additional face that is present on the new Box Feature
+        filletFace = self.OCCFace()
+
+        # The fillet shares an Edge with four of the box faces. The two faces between
+        # which the fillet is made will each have their previously common edge replaced by
+        # a new Edge that comes from the Fillet Face
+        i1 = self._boxFaces['front']
+        i2 = self._boxFaces['top']
+        occFace1 = newBox.Shape.Faces[i1]
+        occFace2 = newBox.Shape.Faces[i2]
+
+        occFace1.Edges[0] = filletFace.Edges[0]
+        occFace2.Edges[0] = filletFace.Edges[1]
+
+        # Finally, the Fillet also shares an Edge with the two Faces that were adjacent to
+        # the Faces that had the fillet added. Rather than replacing an existing Edge, the
+        # Fillet is an additional (i.e. fifth) Edge to these Faces
+        i3 = self._boxFaces['left']
+        i4 = self._boxFaces['right']
+
+        occFace3 = newBox.Shape.Faces[i3]
+        occFace4 = newBox.Shape.Faces[i4]
+
+        occFace3.Edges.append(filletFace.Edges[2])
+        occFace4.Edges.append(filletFace.Edges[3])
+
+
+        newBox.Shape.Faces[i1] = occFace1
+        newBox.Shape.Faces[i2] = occFace2
+        newBox.Shape.Faces[i3] = occFace3
+        newBox.Shape.Faces[i4] = occFace4
+
+        return filletFace, newBox
 
     def CylinderFeature(self):
         mock_feature = self.FreeCADFeature()
