@@ -10,6 +10,7 @@ class TrackedEdge(TrackedOCCObj):
     def __init__(self, occEdge, edgeName, parent=None):
         super(TrackedEdge, self).__init__(occEdge, edgeName, parent)
         self._faceNames = []
+        self._lastValidFaceNames = []
 
     def _checkEdges(self, occEdges):
         for occEdge in occEdges:
@@ -46,6 +47,8 @@ class TrackedEdge(TrackedOCCObj):
             raise ValueError(msg)
 
         self._faceNames.append(trackedFace.getName())
+        if len(self._faceNames) == 2:
+            self._lastValidFaceNames = self._faceNames[:]
 
 
     def delFace(self, faceName):
@@ -54,3 +57,6 @@ class TrackedEdge(TrackedOCCObj):
 
     def getFaceNames(self):
         return self._faceNames[:]
+
+    def getLastValidFaceNames(self):
+        return self._lastValidFaceNames[:]

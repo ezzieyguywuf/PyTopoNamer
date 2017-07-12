@@ -213,9 +213,9 @@ class TestTracker(unittest.TestCase):
         error should be returned'''
         mock_face0 = self.maker.OCCFace() # Edges 0, 1, 2 ,3
         mock_face1a = self.maker.OCCFace() # Edges 0, 6, 7 ,8
-        mock_face1b = copy.deepcopy(mock_face1a )# Edges 1, 6, 7, 8
+        mock_face1b = copy.deepcopy(mock_face1a )# Edges 9, 6, 7, 8
         mock_face1a.Edges[0] = mock_face0.Edges[0]
-        mock_face1b.Edges[0] = mock_face0.Edges[1]
+        mock_face1b.Edges[0] = self.maker.OCCEdge()
 
         faceName0 = self.tracker.addFace(mock_face0)
         faceName1 = self.tracker.addFace(mock_face1a)
@@ -246,3 +246,26 @@ class TestTracker(unittest.TestCase):
         checkValues = [edge.value for edge in checkEdges]
 
         self.assertEqual(checkValues, [mock_face0b.Edges[0].value, mock_face0b.Edges[-1].value])
+
+    def test_getEdgeByName_NewEdge(self):
+        '''After getting the EdgeName, the Edge is replaced by a new Edge (maybe the Edge
+        got longer). getEdgeByName should return the new Edge'''
+        mock_face0a = self.maker.OCCFace() # Edges 0, 1, 2 ,3
+        mock_face1a = self.maker.OCCFace() # Edges 0, 5, 6 ,7
+        mock_face1a.Edges[0] = mock_face0a.Edges[0]
+        mock_face0b = copy.deepcopy(mock_face0a )# Edges 8, 1, 2, 3
+        mock_face1b = copy.deepcopy(mock_face1a )# Edges 8, 5, 6, 7
+        mock_face0b.Edges[0] = self.maker.OCCEdge()
+        mock_face1b.Edges[0] = mock_face0b.Edges[0]
+
+        self.tracker.addFace(mock_face0a)
+        self.tracker.addFace(mock_face1a)
+        edgeName = self.tracker.getEdgeName(mock_face0a.Edges[0])
+
+        self.tracker.modifyFace(mock_face0a, mock_face0b)
+        self.tracker.modifyFace(mock_face1a, mock_face1b)
+
+        checkEdges = self.tracker.getEdgeByName(edgeName)
+        checkValues = [edge.value for edge in checkEdges]
+
+        self.assertEqual(checkValues, [mock_face0b.Edges[0].value])
