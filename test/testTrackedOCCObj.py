@@ -1,5 +1,5 @@
 import unittest
-from TopoNamer.TrackedOCCObj import TrackedOCCObj
+from PyTopoNamer.TrackedOCCObj import TrackedOCCObj
 from test.TestingHelpers import MockObjectMaker
 
 class TestTrackedOCCObj(unittest.TestCase):

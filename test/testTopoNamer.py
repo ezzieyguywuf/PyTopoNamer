@@ -1,5 +1,5 @@
 import unittest
-from TopoNamer.TopoNamer import TopoNamer
+from PyTopoNamer.TopoNamer import TopoNamer
 from test.TestingHelpers import MockObjectMaker
 
 class TestTopoNamer(unittest.TestCase):

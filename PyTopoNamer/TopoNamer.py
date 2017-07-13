@@ -1,4 +1,4 @@
-from TopoNamer.TopoTracker import TopoTracker
+from PyTopoNamer.TopoTracker import TopoTracker
 class TopoNamer(object):
 
     """This class manages the topological naming of an OCC Shape object"""

@@ -1,4 +1,5 @@
-from TopoNamer.TrackedOCCObj import TrackedOCCObj
+from PyTopoNamer.TrackedOCCObj import TrackedOCCObj
+
 class TrackedFace(TrackedOCCObj):
     '''This class will hold instances of a tracked OpenCascade Face object
     

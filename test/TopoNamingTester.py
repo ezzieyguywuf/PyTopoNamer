@@ -1,6 +1,6 @@
 import unittest
 from unittest import mock
-from TopoNamer import TopoNamer, TopoEdgeAndFaceTracker
+from PyTopoNamer import TopoNamer, TopoEdgeAndFaceTracker
 from TestingHelpers import MockObjectMaker
 from TrackedEdge import TrackedEdge
 

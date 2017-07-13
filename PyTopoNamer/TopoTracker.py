@@ -1,5 +1,5 @@
-from TopoNamer.TrackedFace import TrackedFace
-from TopoNamer.TrackedEdge import TrackedEdge
+from PyTopoNamer.TrackedFace import TrackedFace
+from PyTopoNamer.TrackedEdge import TrackedEdge
 
 class TopoTracker(object):
     ''' Tracks the topological Faces and Edges of one solid.

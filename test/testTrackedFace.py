@@ -1,5 +1,5 @@
 import unittest
-from TopoNamer.TrackedFace import TrackedFace
+from PyTopoNamer.TrackedFace import TrackedFace
 from test.TestingHelpers import MockObjectMaker
 
 class TestTrackedFace(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
-from TopoNamer.TrackedFace import TrackedFace
-from TopoNamer.TrackedEdge import TrackedEdge
+from PyTopoNamer.TrackedFace import TrackedFace
+from PyTopoNamer.TrackedEdge import TrackedEdge
 from test.TestingHelpers import MockObjectMaker
 
 class TestTrackedEdge(unittest.TestCase):

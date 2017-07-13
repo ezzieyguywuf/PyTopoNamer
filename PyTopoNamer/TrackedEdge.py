@@ -1,4 +1,5 @@
-from TopoNamer.TrackedOCCObj import TrackedOCCObj
+from PyTopoNamer.TrackedOCCObj import TrackedOCCObj
+
 class TrackedEdge(TrackedOCCObj):
 
     """Tracks a given OpenCascade Edge.

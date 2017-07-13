@@ -1,5 +1,5 @@
 import unittest
-from TopoNamer.TopoTracker import TopoTracker
+from PyTopoNamer.TopoTracker import TopoTracker
 from test.TestingHelpers import MockObjectMaker
 import copy
 
