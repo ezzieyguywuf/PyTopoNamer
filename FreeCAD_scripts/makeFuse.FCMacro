@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /home/wolfie/Program/FreeCAD_dev/PyTopoNamer/FreeCAD_scripts/makeFuse.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+import Part
+
+# add PyTopoNamer to path and import
+import sys
+path = 'path/to/PyTopoNamer'
+sys.path.append(path)
+from PyTopoNamer.TopoNamer import TopoNamer
+
+# create namer instance
+namer = TopoNamer()
+
+# This will reduce verbosity
+doc = App.ActiveDocument
+
+# Make primitives
+doc.addObject("Part::Box","Box")
+doc.ActiveObject.Label = "Cube"
+doc.recompute()
+doc.addObject("Part::Cylinder","Cylinder")
+doc.ActiveObject.Label = "Cylinder"
+doc.recompute()
+
+# Fuse them together
+App.activeDocument().addObject("Part::MultiFuse","Fusion")
+App.activeDocument().Fusion.Shapes = [App.activeDocument().Box,App.activeDocument().Cylinder,]
+doc.recompute()
+
+# We'll begin the tracking with the fused object
+fusedShape = doc.getObject('Fusion')
+namer.addShape(fusedShape)
+
+# Retrieve a name for an edge we wish to chamfer
+chamfEdgeName = namer.getEdgeName(fusedShape.Shape.Edges[9])
+print('The chamfered Edge is named {}'.format(chamfEdgeName))
+
+# This is how the Edge can be retrieved using the name
+recoveredEdge = namer.getEdgeByName(chamfEdgeName)[0]
+
+# This will prove that it's still the same Edge
+equality = recoveredEdge.isEqual(fusedShape.Shape.Edges[9])
+print('RecoveredEdge.isEqual(originalEdge) == {}'.format(equality))
+
+# Change height of Cylinder
+origFaces = App.ActiveDocument.getObject('Fusion').Shape.Faces[:]
+FreeCAD.getDocument("Unnamed").getObject("Cylinder").Height = '5 mm'
+doc.recompute()
+newFaces  = App.ActiveDocument.getObject('Fusion').Shape.Faces[:]
+
+# The following part will use OpenCascade methods, but for now this hack will do - I have
+# manually checked which faces change, etc.
+# On the cube, the faces are numbered as follows on the original fused shape:
+# Front=5, Back=0, Top=3, Bot=1, Left=4, Right=2
+# The cylinder faces on the fused shape are numbered as follows:
+# Lateral=8, TopPacman=10, TopPie=7, BotPacman=9, BotPie=6
+#
+# After the cylinder is made smaller, the faces on the Cube are numbered as:
+# Front=4, Back=2, Top=0, Bot=5, Left=1, Right=3
+# And finally, the cylinder faces are numbered as:
+# Lateral=6, TopPacman=7, TopPie=DELETED, BotPacman=9, BotPie=8
+
+modifiedFaces = [(origFaces[5], newFaces[4]),
+                 (origFaces[0], newFaces[2]),
+                 (origFaces[3], newFaces[0]),
+                 (origFaces[1], newFaces[5]),
+                 (origFaces[4], newFaces[1]),
+                 (origFaces[2], newFaces[3]),
+                 (origFaces[8], newFaces[6]),
+                 (origFaces[10], newFaces[7]),
+                 (origFaces[9], newFaces[9]),
+                 (origFaces[6], newFaces[8])]
+deletedFaces = [origFaces[7]]
+
+# print('orig[2].isSame(new[3]) = {}'.format(origFaces[2].isSame(newFaces[3])))
+# for i,face in enumerate(newFaces):
+    # if face.isSame(origFaces[2]):
+        # print('newFace[{}] isSame to origFase[2]'.format(i))
+
+# for i,faces in enumerate(modifiedFaces):
+    # print("running for i={}".format(i))
+    # namer.modifyShape(modifiedFaces=[faces])
+
+namer.modifyShape(modifiedFaces=modifiedFaces, deletedFaces=deletedFaces)
+
+# After the Cylinder changes height, what was previously Edge[9] becomes Edge[2]. This is
+# why FreeCAD has an issue with keeping track of fillets, and the need for Topological
+# Naming. The following lines show how the current implementation addresses this issue
+
+recoveredEdge = namer.getEdgeByName(chamfEdgeName)[0]
+fusedShape = App.ActiveDocument.getObject('Fusion')
+equality = recoveredEdge.isEqual(fusedShape.Shape.Edges[2])
+
+print('RecoveredEdge.isEqual(originalEdge) == {}'.format(equality))
+
+# Macro End: /home/wolfie/Program/FreeCAD_dev/PyTopoNamer/FreeCAD_scripts/makeFuse.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++

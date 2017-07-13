@@ -10,7 +10,7 @@ class TopoTracker(object):
     
     Any time a face is added, a new `TrackedFace` instance is created. Next, each edge in
     the recently added face is checked - if there are not currently ane `TrackedEdge`s
-    that are topologically equivalent (using OCC's `isEqual` method) to one of the new
+    that are topologically equivalent (using OCC's `isSame` method) to one of the new
     edges, a new `TrackedEdge` is created. Otherwise, the existing `TrackedEdge` is
     updated with the current face, i.e. as a second face that shares the Edge.'''
     def __init__(self):
@@ -29,7 +29,7 @@ class TopoTracker(object):
         Otherwise, returns None.'''
         for i, edgeTracker in enumerate(self._edgeTrackers):
             trackedOCCEdge = edgeTracker.getOCCEdge()
-            if trackedOCCEdge.isEqual(OCCEdge):
+            if trackedOCCEdge.isSame(OCCEdge):
                 return i
         return None
 
@@ -170,3 +170,10 @@ class TopoTracker(object):
         faceTracker.updateOCCFace(newOCCFace)
         self._clearFaceFromEdgeTrackers(name)
         self._checkEdges(faceTracker)
+
+    def deleteFace(self, OCCFace):
+        '''Delete the given face. This means it no longer contributes to any Edges'''
+
+        tracker = self._getFaceTracker(OCCFace)
+        faceName = tracker.getName()
+        self._clearFaceFromEdgeTrackers(faceName)

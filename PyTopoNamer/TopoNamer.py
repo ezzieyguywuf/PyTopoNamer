@@ -10,6 +10,10 @@ class TopoNamer(object):
         '''Returns the EdgeName of the given OpenCascade Edge'''
         return self._tracker.getEdgeName(occEdge)
 
+    def getEdgeByName(self, edgeName):
+        '''Returns the OpenCascade Edge that is being tracked by the edgeName'''
+        return self._tracker.getEdgeByName(edgeName)
+
     def addShape(self, feature):
         """Track a created Shape's topology
 
@@ -36,3 +40,7 @@ class TopoNamer(object):
         if not modifiedFaces is None:
             for oldFaceName, newFace in modifiedFaces:
                 self._tracker.modifyFace(oldFaceName, newFace)
+
+        if not deletedFaces is None:
+            for face in deletedFaces:
+                self._tracker.deleteFace(face)

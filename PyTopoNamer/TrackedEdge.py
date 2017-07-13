@@ -15,7 +15,7 @@ class TrackedEdge(TrackedOCCObj):
 
     def _checkEdges(self, occEdges):
         for occEdge in occEdges:
-            if occEdge.isEqual(self._occObj):
+            if occEdge.isSame(self._occObj):
                 return True
         return False
 
