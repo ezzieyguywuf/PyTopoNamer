@@ -6,7 +6,7 @@ class BaseFakeOCCObject(object):
     def isEqual(self, check):
         return check.value == self.value
     def isSame(self, check):
-        self._isEqual(check)
+        self.isEqual(check)
 
 class FakeOCCEdge(BaseFakeOCCObject):
     def __init__(self, value):
