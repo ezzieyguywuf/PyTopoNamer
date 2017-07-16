@@ -50,6 +50,14 @@ class TopoTracker(object):
         msg = "That OCCFace is not being tracked"
         raise ValueError(msg)
 
+    def _getFaceTrackerByFaceName(self, FaceName):
+        '''return the `FaceTracker` that is tracknig the Face defined by FaceName'''
+        for faceTracker in self._faceTrackers:
+            if FaceName == faceTracker.getName():
+                return faceTracker
+        msg = '{} is not a valid FaceName. There is no tracker with that name'
+        raise ValueError(msg)
+
     def _getEdgeTracker(self, EdgeName):
         '''Return the `EdgeTracker` that is tracking the edge defined by EdgeName
 
@@ -96,9 +104,20 @@ class TopoTracker(object):
             msg = 'This Edge in invalid: it was never shared by two Faces'
             raise ValueError(msg)
 
-        for tracker in self._edgeTrackers:
-            if tracker.hasFace(faces[0]) and tracker.hasFace(faces[1]):
-                edges.append(tracker.getOCCEdge())
+        faceTrackerA = self._getFaceTrackerByFaceName(faces[0])
+        faceTrackerB = self._getFaceTrackerByFaceName(faces[1])
+
+        faceA = faceTrackerA.getOCCFace()
+        faceB = faceTrackerB.getOCCFace()
+
+        for edgeA in faceA.Edges:
+            for edgeB in faceB.Edges:
+                if edgeA.isSame(edgeB):
+                    edges.append(edgeA)
+
+        # for tracker in self._edgeTrackers:
+            # if tracker.hasFace(faces[0]) and tracker.hasFace(faces[1]):
+                # edges.append(tracker.getOCCEdge())
 
         if len(edges) == 0:
             msg = 'There are no Edges that share these two faces: {}, {}'.format(faces[0], faces[1])
