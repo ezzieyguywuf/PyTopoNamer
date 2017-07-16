@@ -6,7 +6,7 @@ import Part
 
 # add PyTopoNamer to path and import
 import sys
-path = 'path/to/PyTopoNamer'
+path = '/home/wolfie/Program/FreeCAD_dev/PyTopoNamer/'
 sys.path.append(path)
 from PyTopoNamer.TopoNamer import TopoNamer
 
@@ -17,27 +17,24 @@ namer = TopoNamer()
 doc = App.ActiveDocument
 
 # Make primitives
-doc.addObject("Part::Box","Box")
-doc.ActiveObject.Label = "Cube"
-doc.recompute()
-doc.addObject("Part::Cylinder","Cylinder")
-doc.ActiveObject.Label = "Cylinder"
-doc.recompute()
+Box = doc.addObject("Part::Box","Box")
+Cyl = doc.addObject("Part::Cylinder","Cylinder")
 
 # Fuse them together
-App.activeDocument().addObject("Part::MultiFuse","Fusion")
-App.activeDocument().Fusion.Shapes = [App.activeDocument().Box,App.activeDocument().Cylinder,]
+Fus = App.activeDocument().addObject("Part::MultiFuse","Fusion")
+Fus.Shapes = [Box, Cyl]
 doc.recompute()
 
 # We'll begin the tracking with the fused object
-fusedShape = doc.getObject('Fusion')
-namer.addShape(fusedShape)
+namer.addShape(Fus)
 
-# Retrieve a name for an edge we wish to chamfer
-chamfEdgeName = namer.getEdgeName(fusedShape.Shape.Edges[9])
+# Retrieve a name for an edge we wish to chamfer. Typically, the user will select an Edge
+chamfEdgeName = namer.getEdgeName(Fus.Shape.Edges[9])
 print('The chamfered Edge is named {}'.format(chamfEdgeName))
 
-# This is how the Edge can be retrieved using the name
+# This is how the Edge can be retrieved using the name. Note that `getEdgeByName` returns
+# a list, because the original Edge may be split into multiple Edges in subsequent
+# operations
 recoveredEdge = namer.getEdgeByName(chamfEdgeName)[0]
 
 # This will prove that it's still the same Edge
@@ -45,10 +42,11 @@ equality = recoveredEdge.isEqual(fusedShape.Shape.Edges[9])
 print('RecoveredEdge.isEqual(originalEdge) == {}'.format(equality))
 
 # Change height of Cylinder
-origFaces = App.ActiveDocument.getObject('Fusion').Shape.Faces[:]
-FreeCAD.getDocument("Unnamed").getObject("Cylinder").Height = '5 mm'
+origFaces = Fus.Shapes.Faces[:]
+Cyl.Height = '5 mm'
 doc.recompute()
-newFaces  = App.ActiveDocument.getObject('Fusion').Shape.Faces[:]
+Fus = doc.getObject('Fusion')
+newFaces  = Fus.Shape.Faces[:]
 
 # The following part will use OpenCascade methods, but for now this hack will do - I have
 # manually checked which faces change, etc.

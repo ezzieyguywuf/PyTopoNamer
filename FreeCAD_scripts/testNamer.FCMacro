@@ -1,0 +1,227 @@
+import FreeCAD
+import Part
+
+# add PyTopoNamer to path and import
+import sys
+path = '/home/wolfie/Program/FreeCAD_dev/PyTopoNamer/'
+sys.path.append(path)
+from PyTopoNamer.TopoNamer import TopoNamer
+
+TARGET_EDGE = 9
+
+class MyDoc(object):
+    '''This is just a shell class b/c TopoNamer expects a FreeCAD Part::Feature, not a
+    pure Shape object'''
+    def __init__(self, Shape):
+        self.Shape = Shape
+
+class MyFuse(object):
+    '''This class is intended to mock the FreeCAD Part::Fusion class'''
+    def __init__(self):
+        '''note: really we should take a list of shapes, but for the purposes of this
+        example we\'ll just explicitly make the two shapes'''
+        self._box = Part.makeBox(10.0, 10.0, 10.0)
+        self._cyl = Part.makeCylinder(2.5, 10.0)
+        self._fus = self._box.fuse(self._cyl)
+
+        self._namer = TopoNamer()
+
+        docObject = MyDoc(self._fus)
+        self._namer.addShape(docObject)
+
+    def getShape(self):
+        return self._fus
+
+    def makeCylHeight5mm(self):
+        '''Note: The key here is knowing which faces from the original Fused shape have
+        been modified into a new OCC Face.'''
+        self._cyl = Part.makeCylinder(2.5, 5.0)
+        origFaces = self._fus.Faces[:]
+        self._fus = self._box.fuse(self._cyl)
+        newFaces  = self._fus.Faces[:]
+
+        # Pass the approriate information to our TopoNamer The following part will eventually use
+        # OpenCascade methods, but for now this hack will do - I have manually checked which faces
+        # change, etc.  On the cube, the faces are numbered as follows on the original fused
+        # shape:
+        # Front=5, Back=0, Top=3, Bot=1, Left=4, Right=2
+        # The cylinder faces on the fused shape are numbered as follows:
+        # Lateral=8, TopPacman=10, TopPie=7, BotPacman=9, BotPie=6
+        #
+        # After the cylinder is made smaller, the faces on the Cube are numbered as:
+        # Front=4, Back=2, Top=0, Bot=5, Left=1, Right=3
+        # And finally, the cylinder faces are numbered as:
+        # Lateral=6, TopPacman=7, TopPie=DELETED, BotPacman=9, BotPie=8
+
+        modifiedFaces = [(origFaces[5], newFaces[4]),
+                         (origFaces[0], newFaces[2]),
+                         (origFaces[3], newFaces[0]),
+                         (origFaces[1], newFaces[5]),
+                         (origFaces[4], newFaces[1]),
+                         (origFaces[2], newFaces[3]),
+                         (origFaces[8], newFaces[6]),
+                         (origFaces[10], newFaces[7]),
+                         (origFaces[9], newFaces[9]),
+                         (origFaces[6], newFaces[8])]
+        deletedFaces = [origFaces[7]]
+        self.modifiedFaces = modifiedFaces
+        self.deletedFaces = deletedFaces
+        self._namer.modifyShape(modifiedFaces=modifiedFaces, deletedFaces=deletedFaces)
+
+    def getEdgeName(self, edgeNum):
+        '''an access method for the TopoNamer'''
+        edge = self._fus.Edges[edgeNum]
+        return self._namer.getEdgeName(edge)
+
+    def getEdge(self, edgeName):
+        '''an use method for the TopoNamer'''
+        targetEdge = self._namer.getEdgeByName(edgeName)[0]
+        return targetEdge
+
+        # for edge in self._fus.Edges:
+            # if edge.isEqual(targetEdge):
+                # return edge
+        
+
+class MyFreeCADChamfer(object):
+    '''This class is intended to mock the FreeCAD::Chamfer class. Notice how the
+    _construct method is hamstringed by always relying on the same position of the target
+    Edge within the Base Shape\'s Edges list.'''
+
+    def __init__(self, base, edgeNum):
+        '''Note: FreeCAD relies on finding the Edge by Index'''
+        self._base = base
+        self._edgeNum = edgeNum
+        self._construct()
+
+    def _construct(self):
+        chamfEdge = self._base.Edges[self._edgeNum]
+        self._chamf = self._base.makeChamfer(1.0, [chamfEdge])
+        App.ActiveDocument.recompute()
+
+    def changeBase(self, newBase):
+        self._base = newBase
+        self._construct()
+
+    def getShape(self):
+        return self._chamf
+
+class MyTopoNamerChamf(object):
+    '''This class is intended to show how a Chamfer can be consistently applied to the
+    same Edge regardless of how the underlying Base Shape changes. Notice how rather than
+    relying on the position of our target Edge in our Base Shape\'s Edges list, we rely on
+    Base Shape itself to give us the actual OCC Edge. We simply provide the TopoNamer
+    supplied edgeName, which is a string'''
+
+    def __init__(self, base, edgeName):
+        self._base = base
+        self._edgeName = edgeName
+        self._construct()
+
+    def _construct(self):
+        targetEdge = self._base.getEdge(self._edgeName)
+        baseShape = self._base.getShape()
+        # edgeNum = None
+        # act_edge = None
+        # for i, edge in enumerate(baseShape.Edges):
+            # if edge.isEqual(targetEdge):
+                # edgeNum = i
+                # act_edge = edge
+                # break
+        # check = targetEdge.isEqual(baseShape.Edges[TARGET_EDGE])
+        # print('targetEdge.isEqual(baseShape.Edges[TARGET_EDGE]) = {}'.format(check))
+        self._chamf = baseShape.makeChamfer(1.0, [targetEdge])
+
+    def getShape(self):
+        return self._chamf
+
+    def changeBase(self, newBase):
+        '''Even though the Base changes, it should still be able to give us the proper
+        Edge to chamfer.
+        
+        Note: in this simple example, we don\'t bother about validating that the newBase
+        is some sort of descendent of the original Base. In other words, we assume that
+        the newBase._namer holds information from the original Base._namer'''
+        self._base = newBase
+        self._construct()
+
+
+class MyTester(object):
+    def __init__(self):
+        self._appName = '__chamfTest'
+
+        for docName in App.listDocuments().keys():
+            if docName == self._appName:
+                App.closeDocument(docName)
+
+        self._app = App.newDocument(self._appName)
+        App.setActiveDocument(self._appName)
+        Gui.ActiveDocument = Gui.getDocument(self._appName)
+
+        self.namer = TopoNamer()
+
+    def makeFuse(self):
+        fuse = MyFuse()
+        return fuse
+
+    def makeFreeCADChamf(self, base, edgeNum):
+        chamf = MyFreeCADChamfer(base, edgeNum)
+        return chamf
+
+    def makeTopoNamerChamf(self, base, edgeName):
+        '''note: this method relies on the `base` managing an instance of TopoNamer'''
+        chamf = MyTopoNamerChamf(base, edgeName)
+        return chamf
+
+    def addFeature(self, shape, name, xy, color):
+        feat = self._app.addObject('Part::Feature', name)
+        feat.Shape = shape.getShape()
+        feat.Placement = App.Placement(App.Vector(xy[0],xy[1],0),App.Rotation(App.Vector(0,0,1),0))
+        vo = Gui.ActiveDocument.getObject(feat.Name)
+        vo.ShapeColor = color
+        return feat
+
+# We'll use this class to manage our various Part objects
+tester = MyTester()
+
+# Make a 10x10x0 cube and fuse with a r=2.5,h=10.0 cylinder
+fuse1 = tester.makeFuse()
+
+# This is similar to how FreeCAD currently does Chamfers. You provide a Base shape, and an
+# Edge Number, and it does the rest
+chamf1 = tester.makeFreeCADChamf(fuse1.getShape(), TARGET_EDGE)
+# make a copy
+chamf1a = tester.makeFreeCADChamf(fuse1.getShape(), TARGET_EDGE)
+
+# In the FreeCAD implementation, when the underlying Base shape changes, the Chamfer is
+# recomputed using the same Edge Number. This is why the chamfer moves
+fuse1.makeCylHeight5mm()
+chamf1.changeBase(fuse1.getShape())
+
+# Now let's try again with the TopoNamer prototype
+fuse2 = tester.makeFuse()
+
+# We'll need to ask the fuse2 object about the name of the Edge which we intend to chamfer
+# before we build the Chamfer object. In real life, rather than passing a '10' here we'll
+# ask the user to select an Edge visually (or by some other method)
+edgeName = fuse2.getEdgeName(TARGET_EDGE)
+
+# Now we can build our Chamfer
+chamf2 = tester.makeTopoNamerChamf(fuse2, edgeName)
+# make a copy
+chamf2a = tester.makeTopoNamerChamf(fuse2, edgeName)
+
+# Now, when our base shape changes, our Chamfer construction algorithm should still be
+# able to find the same edge to Chamfer
+fuse2.makeCylHeight5mm()
+chamf2.changeBase(fuse2)
+
+# Finally, let's display all the objects so we can get a visual
+tester.addFeature(chamf1a, 'Chamfer', (0,0), (1.0, 0.0, 0.0))
+tester.addFeature(chamf1, 'Chamfer', (0,20), (1.0, 0.0, 0.0))
+tester.addFeature(fuse1, 'Fusion', (0,40), (1.0, 0.0, 0.0))
+tester.addFeature(chamf2a, 'Chamfer', (20,0), (0.0, 0.0, 1.0))
+tester.addFeature(chamf2, 'Chamfer', (20,20), (0.0, 0.0, 1.0))
+tester.addFeature(fuse2, 'Fusion', (20,40), (0.0, 0.0, 1.0))
+Gui.activeDocument().activeView().viewAxonometric()
+Gui.SendMsgToActiveView('ViewFit')
