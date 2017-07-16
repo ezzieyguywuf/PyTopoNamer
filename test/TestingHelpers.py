@@ -3,10 +3,12 @@ from unittest import mock
 class BaseFakeOCCObject(object):
     def __init__(self, value):
         self.value = value
+
     def isEqual(self, check):
         return check.value == self.value
+
     def isSame(self, check):
-        self.isEqual(check)
+        return self.isEqual(check)
 
 class FakeOCCEdge(BaseFakeOCCObject):
     def __init__(self, value):
