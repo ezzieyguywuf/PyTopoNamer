@@ -3,7 +3,7 @@ import Part
 
 # add PyTopoNamer to path and import
 import sys
-path = '/home/wolfie/Program/FreeCAD_dev/PyTopoNamer/'
+path = 'path/to/PyTopoNamer'
 sys.path.append(path)
 from PyTopoNamer.TopoNamer import TopoNamer
 
