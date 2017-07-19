@@ -3,7 +3,7 @@ import Part
 
 # add PyTopoNamer to path and import
 import sys
-path = '/path/to/PyTopoNamer'
+path = '/home/wolfie/Program/FreeCAD_dev/PyTopoNamer/'
 sys.path.append(path)
 from PyTopoNamer.TopoNamer import TopoNamer
 
@@ -84,35 +84,41 @@ class MyFuse(object):
         been modified into a new OCC Face.'''
         self._cyl = Part.makeCylinder(2.5, 5.0)
         origFaces = self.Shape.Faces[:]
-        self.Shape = self._box.fuse(self._cyl)
+        self.Shape = self._box.fuse(self._cyl, withHistory=True)
+        # Use Jnxd's history framework!!!
+        history   = self.Shape.History
         newFaces  = self.Shape.Faces[:]
 
-        # Pass the approriate information to our TopoNamer The following part will eventually use
-        # OpenCascade methods, but for now this hack will do - I have manually checked which faces
-        # change, etc.  On the cube, the faces are numbered as follows on the original fused
-        # shape:
-        # Front=5, Back=0, Top=3, Bot=1, Left=4, Right=2
-        # The cylinder faces on the fused shape are numbered as follows:
-        # Lateral=8, TopPacman=10, TopPie=7, BotPacman=9, BotPie=6
-        #
-        # After the cylinder is made smaller, the faces on the Cube are numbered as:
-        # Front=4, Back=2, Top=0, Bot=5, Left=1, Right=3
-        # And finally, the cylinder faces are numbered as:
-        # Lateral=6, TopPacman=7, TopPie=DELETED, BotPacman=9, BotPie=8
+        modifiedFaces = []
+        deletedFaces  = []
+        newFaces      = []
 
-        modifiedFaces = [(origFaces[5], newFaces[4]),
-                         (origFaces[0], newFaces[2]),
-                         (origFaces[3], newFaces[0]),
-                         (origFaces[1], newFaces[5]),
-                         (origFaces[4], newFaces[1]),
-                         (origFaces[2], newFaces[3]),
-                         (origFaces[8], newFaces[6]),
-                         (origFaces[10], newFaces[7]),
-                         (origFaces[9], newFaces[9]),
-                         (origFaces[6], newFaces[8])]
-        deletedFaces = [origFaces[7]]
-        self.modifiedFaces = modifiedFaces
-        self.deletedFaces = deletedFaces
+        for tracker in self._namer._tracker._faceTrackers:
+            oldFace  = tracker.getOCCFace()
+            modFaces = history.modified(oldFace)
+            nueFaces = history.generated(oldFace)
+            if history.isDeleted(oldFace):
+                deletedFaces.append(oldFace)
+                continue
+            for i,modFace in enumerate(modFaces):
+                # only the first will be considered modified. Any others will be
+                # considered new
+                if i == 0:
+                    # make sure this modFace wasn't already added
+                    check = [i[1].isEqual(modFace)==False for i in modifiedFaces]
+                    if all(check):
+                        modifiedFaces.append([oldFace, modFace])
+                else:
+                    # make sure this newFace wasn't already added
+                    check = [i.isEqual(modFace)==False for i in nueFaces]
+                    if all(check):
+                        newFaces.append(modFace)
+            for newFace in nueFaces:
+                # make sure this newFace wasn't already added
+                check = [i.isEqual(newFace)==False for i in newFaces]
+                if all(check):
+                    newFaces.append(newFace)
+
         self._namer.modifyShape(modifiedFaces=modifiedFaces, deletedFaces=deletedFaces)
 
     def getEdgeName(self, edgeNum):
